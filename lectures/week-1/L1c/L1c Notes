@@ -1,0 +1,41 @@
+
+Unsupervised Learning and Clustering Approaches
+
+Unsupervised Learnning 
+- discovering structure in the data without labels 
+- labels are 'categories' of the data 
+    - example would be whether the patient died 
+    - yes or no 
+    - multiclass categories
+- need to measure 'similarity' between data points in order to separate data into different bins 
+- similarity in terms of distance using 'K MEANS' --> super simple
+
+Lloyd's Algorithm 
+- Specify a number of buckets and partition points into buckets so that each point in the bucket was strongly represented by the mean 
+- Dataset with n vectors, each vector is m long 
+    - age, income level, etc. for 100 people 
+- Partition into K distinc group by minimizing cluster sum of squared distance
+    - calculate mean of all points and want points of bucket to be similar to the mean
+- Measure similarity with eucladian distance d(x,y)^2= ||x-y||^2
+- Need to know the number of clusters 
+
+Manhattan norm (p=1) --> distance as sum of absolute differences
+Euclidean norm (p=2) --> straight line distance, for K-means 
+Maximum norm (p=inf) --> distanceas the largest component difference 
+
+
+How many buckets? 
+- we do not know... make it up 
+- while loop until condition converges 
+- k-means ++ uses sampling method that takes selection probability for assigning point into cluster
+- set up cluster centroid list (point to clustering)
+
+1. assignment 
+- for each data point, assign it to nearest cluster centroid 
+- take distance from data point to all cluster means and pick the index of the minimum distance from teh cluster mean and assign that data point to that bin
+arg min ||x(i) - u (j)||^2 
+
+2. update the centroid with the new dta point to the new mean 
+3. stop when reach max iteraitons or the centroids do not change 
+
+- convergence guarantee means that the obejctive function J = sum od all euclidean norms never changes for finite iterations BUT not necessarilly the best
