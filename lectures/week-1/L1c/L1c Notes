@@ -39,3 +39,5 @@ arg min ||x(i) - u (j)||^2
 3. stop when reach max iteraitons or the centroids do not change 
 
 - convergence guarantee means that the obejctive function J = sum od all euclidean norms never changes for finite iterations BUT not necessarilly the best
+
+- elbow and SI methods to systematically figure out the number of buckets
