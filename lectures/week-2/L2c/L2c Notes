@@ -1,0 +1,55 @@
+#=
+Principal Component Analysis 
+
+Eigendecomposition Review 
+- Set of eigenvalues and linearly independent vectors (v = eigenvectors) such that A * v = v * l 
+- Kronecker delta
+    - if i = j, inner product is 1 
+    - if i ≠ j, inner product is 0
+- Eigenvalues and eigenvectors of a symmetric matrix are real
+- Covariance gives eigenvectors that are non-zero and positive
+- Stoichiometrix array for a bio-application: 
+    - R reactions with M metabolites 
+    - S is stoich. matrix M x R where: (m is rows, r is columns)
+        - stoich. coeffifient > 0 if i is produced by j 
+        - entry = 0 if no connection 
+        - stoich. coeffifient < 0 if i is consumed by j 
+
+Eigendecomposition Using QR-Decomposition 
+- Think of a matrix as a transformation. When you multiply a matrix by most vectors, the result points in a completely different direction. But for special vectors called **eigenvectors**, the matrix only stretches or shrinks them - they keep pointing in the same direction. The amount of stretching/shrinking is the **eigenvalue**.
+- Imagine a transformation that stretches space. Most arrows would change direction and length, but some special arrows only change length - those are eigenvectors, and how much they stretch is the eigenvalue.
+- The covariance matrix shows how different stocks move together
+- Eigenvectors reveal the main directions of market movement
+- Eigenvalues tell you how much variation each direction explains
+- This helps identify patterns and risks in your portfolio
+- Instead of finding one eigenvalue at a time, **QR iteration** finds all of them simultaneously:
+    1. Take your matrix and break it into two simpler matrices (Q and R)
+    2. Multiply them back together in reverse order
+    3. Repeat this process
+    4. The matrix gradually becomes triangular, with eigenvalues appearing on the diagonal
+- Each step is a similarity transformation that preserves eigenvalues while gradually revealing them in a simpler form.
+- The method is powerful because it handles all eigenvalues at once, making it practical for real-world problems like analyzing multiple stocks simultaneously.
+
+
+
+Dimensionality Reduction Problem 
+- Dataset D in m dimensional space to a vector that is only k big (compression)
+- Low dimensional vector is a composite feature 
+- Magical transformation P has reduced dimension rows and columns are original dimension 
+    - ex: 2 rows and 30 columns transformation matrix P 
+    - y= P (x-x_) where x is original feature and x_ is the mean of the features 
+- P is the eigenvector P = [ø(i),...,ø(j)]
+    - y (i) = ø(i) (x-x_)
+
+QR- Decomposition 
+- Decomposition of matrix A 
+- A = Q * R
+- Split matrix into orthogonal (Q) and upper triangular factors (R)
+- Q is a square and orthogonal such that its transpose is its inverse 
+- Q R function in Julia
+- Focus on symmetric arrays A 
+- A(k) = Q(k) * R(k)
+    - A (k+1) = Q(k, Transpose) * A(k) *Q(k)
+- If || A(k+1) - A(k)|| ≤ E ; set converge to true and return eigenvalues ---> where || A(k+1) - A(k)|| = 1 is the matrix norm
+- QR iteration gives eigenvalues along main diagonal 
+=#
