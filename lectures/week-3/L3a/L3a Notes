@@ -1,0 +1,34 @@
+#= 
+Singular Value Decomposition (SVD)
+- A is a matrix of rank R --> # of independent blocks of information
+- SVD factors an array to a condensed matrix of information
+
+A = U S V(transope)
+    - U is orthogonal (m x m) such that U(transpose)U = I 
+    - S holds singular value on first r diagonal entries (m x n)
+        - each singular value is the 'weight' of a piece of information 
+        - singular value is the square root of the non-negative eigenvalue of the positive semi-definite matrix 
+        A(transpose)A
+            - ø(i)= √l(i)A(transpose)A
+            - rank of A is --> r ≤ min (m,n)
+        - V is (n x n) matrix that is orthogonal
+
+- SVD is not really used but Julia provides 
+
+- SVD does QR matrix on B <--ATA and AAT 
+- B = eigendecomposition and sort eigenvalues in descending order 
+- Singular value is the square root of the eigenvalues 
+
+- expensive to form this array --> not necessary, pricey for large arrays 
+
+- estimate the covariance 
+
+- eigenvectors tell us maximum variance directions 
+- eigenvalues give magnitude 
+- PCA & SVD are closely related --> columns of singular vectors from SVD are similar to the eigenvectors V from PCA
+
+- SVD gives best kth order approximation to original data (best one)
+
+- do not need to do AAT
+
+- matrix with full rank has maximum amount of unique pieces of information 
