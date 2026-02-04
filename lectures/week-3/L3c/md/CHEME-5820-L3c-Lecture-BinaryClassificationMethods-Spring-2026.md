@@ -39,8 +39,6 @@ Today, we focus on __the Perceptron__ and __logistic regression__ as foundationa
 ___
 
 ## Perceptron
-[The Perceptron (Rosenblatt, 1957)](https://en.wikipedia.org/wiki/Perceptron) transforms the output of a linear regression model $y_{i}\in\mathbb{R}$ using an activation function to produce discrete class values. For binary classification, we use $\sigma:\mathbb{R}\rightarrow\{-1,1\}$. 
-
 Suppose we have a labeled dataset $\mathcal{D} = \left\{(\mathbf{x}_{1},y_{1}),\dotsc,(\mathbf{x}_{n},y_{n})\right\}$ with $n$ examples, where each example is labeled by an expert in a category $y_{i}\in\{-1,1\}$ with an $m$-dimensional feature vector $\mathbf{x}_{i}\in\mathbb{R}^{m}$. 
 
 > __Perceptron__
@@ -65,16 +63,16 @@ $$
 ### Classical: Online Perceptron Training
 __Convergence guarantee__: If dataset $\mathcal{D}$ is linearly separable, the Perceptron converges to a separating hyperplane in finite iterations. However, if $\mathcal{D}$ is not linearly separable, the Perceptron may not converge. 
 
-Let's examine the Perceptron learning algorithm pseudocode. 
+Let's examine the Perceptron learning algorithm pseudocode, where we set a maximum number of mistakes $M$ (e.g., $M=1$) and a maximum number of iterations $T$ to prevent infinite loops for non-separable data.
 
 __Initialize__: Given a linearly separable dataset $\mathcal{D} = \left\{(\mathbf{x}_{1},y_{1}),\dotsc,(\mathbf{x}_{n},y_{n})\right\}$, the maximum number of iterations $T$, and the maximum number of mistakes $M$ (e.g., $M=1$), initialize the parameter vector $\mathbf{\theta} = \left(\mathbf{w}, b\right)$ to small random values and set the loop counter $t\gets{0}$.
 
-> **Rule of thumb for $T$**: Set $T = 10n$ to $100n$, where $n$ is the number of training examples. The algorithm often converges faster for linearly separable data.
+> **Rule of thumb for maximum iterations**: Set the maximum number of iterations $T = 10n$ to $100n$, where $n$ is the number of training examples. The algorithm often converges faster for linearly separable data. However, for non-separable data, a larger $T$ may be necessary to achieve satisfactory performance.
 
 While $\texttt{true}$ __do__:
 1. Initialize the number of mistakes $\texttt{mistakes} = 0$.
 2. For each training example $(\mathbf{x}, y) \in \mathcal{D}$: compute $y\;\left(\mathbf{\theta}^{\top}\;\mathbf{x}\right)\leq{0}$. 
-    - If true: the example is __misclassified__ (the sign of the prediction doesn't match the label $y$). Update $\mathbf{\theta} \gets \mathbf{\theta} + y\;\mathbf{x}$ and increment $\texttt{mistakes} \gets \texttt{mistakes} + 1$.
+    - If $\texttt{true}$: the example is __misclassified__ (the sign of the prediction doesn't match the label $y$). Update $\mathbf{\theta} \gets \mathbf{\theta} + y\;\mathbf{x}$ and increment $\texttt{mistakes} \gets \texttt{mistakes} + 1$.
 3. After processing all examples, if $\texttt{mistakes} \leq {M}$ or $t \geq T$, exit. Otherwise, increment $t \gets t + 1$ and repeat from step 1.
 
 We aim to minimize mistakes, with $M = 0$ being ideal. However, zero mistakes may not be achievable for weakly separable or non-separable data.
@@ -105,8 +103,8 @@ The inverse temperature $\beta > 0$ is a fundamental parameter that controls how
 
 > __Physical Intuition for $\beta$:__
 > 
-> * **Large $\beta$ (high "temperature sharpness"):** The exponential function becomes increasingly selective, small energy differences translate into large probability differences. The model becomes highly confident, approaching a hard decision boundary. As $\beta \to \infty$, the probability distribution becomes sharper and sharper, eventually resembling the sign function of the Perceptron.
-> * **Small $\beta$ (low "temperature sharpness"):** The exponential function flattens, and all states become roughly equally probable regardless of energy differences. The model becomes uncertain, assigning probability near 0.5 to both classes. As $\beta \to 0$, predictions approach maximum uncertainty (50/50 chance for either class).
+> * **Large $\beta$ (high temperature):** The exponential function becomes increasingly selective, small energy differences translate into large probability differences. The model becomes highly confident, approaching a hard decision boundary. As $\beta \to \infty$, the probability distribution becomes sharper and sharper, eventually resembling the sign function of the Perceptron.
+> * **Small $\beta$ (low temperature):** The exponential function flattens, and all states become roughly equally probable regardless of energy differences. The model becomes uncertain, assigning probability near 0.5 to both classes. As $\beta \to 0$, predictions approach maximum uncertainty (50/50 chance for either class).
 > * **$\beta = 1$ (default):** Provides a balance between confidence and uncertainty, often used as the baseline.
 > 
 > In practice, $\beta$ is often absorbed into the weight vector $\theta$ (by rescaling), but keeping it explicit allows independent control of prediction confidence. In applications like medical diagnosis, you might use $\beta < 1$ to avoid overconfident predictions; in spam detection, $\beta > 1$ makes the model more decisive.
@@ -224,15 +222,6 @@ ___
 ## Regularization: Preventing Overfitting
 While gradient descent successfully minimizes the cross-entropy loss, the resulting model may fit the training data too closely, capturing noise and irrelevant patterns. This overfitting problem is especially severe in high-dimensional feature spaces or with limited training data. We address this through regularization.
 
-> __What is regularization?__
->
-> __Regularization__ is a technique that adds a penalty term to the loss function to discourage complex models and improve generalization to unseen data.
-> 
-> By penalizing large parameter values, regularization encourages simpler, more generalizable decision boundaries. Two common regularization approaches are L2 (Ridge) and L1 (Lasso) regularization.
-> 
-> * __L2 regularization (Ridge):__ $R(\theta) = \frac{1}{2}\lVert\theta\rVert_{2}^{2} = \frac{1}{2}\sum_{j=1}^{p}\theta_{j}^{2}$. This penalizes the squared magnitude of all parameters equally and encourages smaller parameter values across the board.
-> * __L1 regularization (Lasso):__ $R(\theta) = \lVert\theta\rVert_{1} = \sum_{j=1}^{p}|\theta_{j}|$. This penalizes the absolute magnitude of parameters and can drive some parameters exactly to zero, effectively performing automatic feature selection.
-
 The regularized cross-entropy loss function can be written as:
 $$
 \boxed{
@@ -243,6 +232,17 @@ J_{\text{reg}}(\theta) & = J(\theta) + \lambda\,R(\theta)\\
 $$
 
 where $\lambda > 0$ is the __regularization parameter__ (also called the regularization strength) that controls the trade-off between minimizing training error and keeping parameters small, and $R(\theta)$ is the regularization function. 
+
+> __What is regularization?__
+>
+> __Regularization__ is a technique that adds a penalty term to the loss function to discourage complex models and improve generalization to unseen data.
+> 
+> By penalizing large parameter values, regularization encourages simpler, more generalizable decision boundaries. Two common regularization approaches are L2 (Ridge) and L1 (Lasso) regularization.
+> 
+> * __L2 regularization (Ridge):__ $R(\theta) = \frac{1}{2}\lVert\theta\rVert_{2}^{2} = \frac{1}{2}\sum_{j=1}^{p}\theta_{j}^{2}$. This penalizes the squared magnitude of all parameters equally and encourages smaller parameter values across the board.
+> * __L1 regularization (Lasso):__ $R(\theta) = \lVert\theta\rVert_{1} = \sum_{j=1}^{p}|\theta_{j}|$. This penalizes the absolute magnitude of parameters and can drive some parameters exactly to zero, effectively performing automatic feature selection.
+
+Let's discuss some practical considerations when applying regularization:
 
 > __Practical: Feature Scaling and Regularization__
 >
