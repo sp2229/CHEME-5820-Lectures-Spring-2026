@@ -29,11 +29,7 @@ using PrettyTables
 using JuMP
 using MadNLP
 using MathOptInterface
+using ColorVectorSpace
 
 # setup random number generator -
 Random.seed!(1234); # seed the random number generator for reproducibility
-
-# include our source files -
-include(joinpath(_PATH_TO_SRC, "Types.jl"));
-include(joinpath(_PATH_TO_SRC, "Factory.jl"));
-include(joinpath(_PATH_TO_SRC, "Compute.jl"));

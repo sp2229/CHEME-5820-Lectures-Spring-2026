@@ -1,0 +1,205 @@
+# L2a: Eigendecomposition
+In this lecture, we'll explore the mathematical (and computational) foundations of the eigendecomposition, a key concept in linear algebra with wide-ranging applications in data science, machine learning, and scientific computing.
+
+> __How does this fit into our story?__ We've started off looking at __unsupervised learning__ techniques for clustering data points based on their features, e.g., using k-means clustering. In this case we imposed a __hard partitioning__ of the data points into distinct clusters. 
+> 
+> __Let the data speak to us!__ Another approach to clustering is to use __spectral clustering__, which leverages the eigenvalues and eigenvectors of matrices derived from the data to identify clusters. Spectral clustering can capture more complex cluster structures and is particularly useful for non-convex clusters.
+
+To understand spectral clustering, data reduction and related techniques, we need to master eigendecomposition and efficient methods for computing eigenpairs.
+
+> __Learning Objectives__
+> 
+> By the end of this lecture, you should be able to:
+>
+> * __Understand eigendecomposition structure and properties:__ Explain how eigenvalues and eigenvectors characterize matrices, describe how matrices can be decomposed using their eigenpairs, and identify special properties of symmetric matrices including real-valued eigenvalues and orthogonal eigenvectors.
+> * __Understand the power iteration algorithm:__ Explain how the power iteration method estimates the largest magnitude eigenvalue and its corresponding eigenvector through iterative matrix-vector multiplication and normalization, and describe convergence conditions and parameter selection based on eigenvalue separation.
+> * __Interpret eigenvalues and eigenvectors geometrically:__ Understand eigenvectors as invariant directions under matrix transformations and eigenvalues as scaling factors along those directions, with applications to covariance matrices, principal component analysis, and network analysis. 
+
+Let's get started!
+___
+
+## Examples
+Today, we will use the following examples to illustrate key concepts:
+
+> [▶ Exploring eigendecomposition with a two-dimensional data cloud](CHEME-5820-L2a-Example-Eigendecomposition-2D-Spring-2026.ipynb). In this example, we generate a two-dimensional dataset, compute its covariance matrix, and perform eigendecomposition to identify principal components. We visualize the data along with the eigenvectors to illustrate how they capture the directions of maximum variance.
+
+> [▶ Let's use the power iteration method to analyze stoichiometric matrices](CHEME-5820-L2a-Example-FunWithPowerIteration-Spring-2026.ipynb). In this example, we implement the power iteration method to compute the dominant eigenvalue and eigenvector of a symmetric positive definite matrix, visualize convergence behavior, and examine how different parameters affect the algorithm's performance.
+
+___
+
+## Eigendecomposition
+Suppose we have a real square matrix $\mathbf{A}\in\mathbb{R}^{m\times{m}}$ which could be a measurement dataset, e.g., the columns of $\mathbf{A}$ represent feature 
+vectors $\mathbf{x}_{1},\dots,\mathbf{x}_{m}$ or an adjacency array in a graph with $m$ nodes, etc. Eigenvalue-eigenvector problems involve finding a set of scalar values $\left\{\lambda_{1},\dots,\lambda_{m}\right\}$ called 
+[eigenvalues](https://mathworld.wolfram.org/Eigenvalue.html) and a set of linearly independent vectors 
+$\left\{\mathbf{v}_{1},\dots,\mathbf{v}_{m}\right\}$ called [eigenvectors](https://mathworld.wolfram.org/Eigenvector.html) such that:
+$$
+\begin{align*}
+\mathbf{A}\cdot\mathbf{v}_{j} &= \lambda_{j}\cdot\mathbf{v}_{j}\qquad{j=1,2,\dots,m}
+\end{align*}
+$$
+where $\mathbf{v}\in\mathbb{C}^{m}$ and $\lambda\in\mathbb{C}$. We can put the eigenvalues and eigenvectors together in matrix-vector form, which gives us an interesting matrix decomposition:
+$$
+\mathbf{A} = \mathbf{V}\cdot\text{diag}(\lambda)\cdot\mathbf{V}^{-1}
+$$
+where $\mathbf{V}$ denotes the matrix of eigenvectors, where the eigenvectors form the columns of the matrix $\mathbf{V}$, $\text{diag}(\lambda)$ denotes a diagonal matrix with the eigenvalues along the main diagonal, and $\mathbf{V}^{-1}$ denotes the inverse of the eigenvector matrix.
+
+> **Clarification:** For a real symmetric matrix $\mathbf{A}$, the eigenvector matrix $\mathbf{V}$ can be chosen orthogonal, so $\mathbf{V}^{-1}=\mathbf{V}^{\top}$. In this case the eigenvectors can be taken to be orthonormal, simplifying the decomposition.
+
+### Symmetric real matrices
+The eigendecomposition of a symmetric real matrix $\mathbf{A}\in\mathbb{R}^{m\times{m}}$ has some special properties. 
+First, all the eigenvalues $\left\{\lambda_{1},\lambda_{2},\dots,\lambda_{m}\right\}$ of the matrix $\mathbf{A}$ are real-valued.
+Next, the eigenvectors $\left\{\mathbf{v}_{1},\mathbf{v}_{2},\dots,\mathbf{v}_{m}\right\}$ of the matrix $\mathbf{A}$ are orthogonal, i.e., $\left<\mathbf{v}_{i},\mathbf{v}_{j}\right> = 0$ for $i\neq{j}$. Finally, the (normalized) eigenvectors $\hat{\mathbf{v}}_{j} = \mathbf{v}_{j}/\lVert\mathbf{v}_{j}\rVert_{2}$ of a symmetric real-valued matrix 
+form an orthonormal basis for $\mathbb{R}^{m}$ such that:
+$$
+\begin{align*}
+\left<\hat{\mathbf{v}}_{i},\hat{\mathbf{v}}_{j}\right> &= \delta_{ij}\qquad\text{for}\quad{i,j\in\{1,\dots,m\}}
+\end{align*}
+$$
+where $\delta_{ij}$ is the Kronecker delta ($\delta_{ij} = 1$ if $i=j$, and $\delta_{ij}=0$ if $i\neq j$). 
+
+> __Interpretation of eigenvalues and eigenvectors:__
+> * Eigenvectors represent fundamental directions of the matrix $\mathbf{A}$. For a linear transformation, eigenvectors are the only vectors that do not change direction, instead they are scaled by a corresponding eigenvalue.
+> * Eigenvalues are scale factors indicating how much the corresponding eigenvector is stretched or compressed during the transformation.
+> * The eigendecomposition diagonalizes a matrix: $\text{diag}(\lambda) = \mathbf{V}^{-1}\cdot\mathbf{A}\cdot\mathbf{V}$. For symmetric real matrices, eigenvalues classify the matrix: if all eigenvalues are positive, the matrix is positive definite; if all are non-negative, it is positive semi-definite.
+
+
+One (square, symmetric) matrix that we'll pay very special attention to is the empirical covariance matrix $\mathbf{\Sigma}\in\mathbb{R}^{m\times{m}}$.
+
+__Why is it interesting?__ The eigenvectors of the empirical covariance matrix represent the principal directions of variance in the data, i.e., the directions along which the data varies the most, and the corresponding eigenvalues indicate the amount of variance captured along each direction.
+___
+
+## Empirical Covariance Matrix
+The covariance matrix is a key concept in statistics and machine learning that describes the relationships between different features in a dataset. 
+
+Suppose we have a dataset $\mathcal{D} = \left\{\mathbf{x}_{1},\mathbf{x}_{2},\dots,\mathbf{x}_{n}\right\}$ of $m$ features and $n$ samples, where $\mathbf{x}_{k}\in\mathbb{R}^{m}$ is the vector of $m$ features for sample $k$, and there are $n$ samples. The empirical covariance matrix $\hat{\mathbf{\Sigma}}\in\mathbb{R}^{m\times m}$ is a square symmetric matrix that summarizes the pairwise covariances between the $m$ features in the dataset $\mathcal{D}$.
+
+Let $x_k^{(i)}$ be the $i$-th feature of sample $k$. Collect the values for feature $i$ into the vector $\mathbf{x}^{(i)}=[x_1^{(i)},\dots,x_n^{(i)}]^\top$. Then, the covariance between features $i$ and $j$ is given by: 
+$$
+\begin{align*}
+    \hat{\Sigma}_{ij} &= \frac{1}{n-1}\sum_{k=1}^{n}\bigl(x^{(i)}_k-\bar{x}_i\bigr)\,\bigl(x^{(j)}_k-\bar{x}_j\bigr) \quad\Longrightarrow\quad\boxed{
+\hat\Sigma_{ij}=\sigma_i\,\sigma_j\,\rho_{ij}}\\
+\end{align*}
+$$
+where the mean $\bar{x}_i = \frac{1}{n}\sum_{k=1}^{n}x_k^{(i)}$ is the average of feature $i$ across all $n$ samples, the term $\sigma_{i} = \sqrt{\hat{\Sigma}_{ii}}$ denotes the standard deviation for feature $i$, and $\rho_{ij}\in\left[-1,1\right]$ denotes the correlation between features $i$ and $j$ in the dataset $\mathcal{D}$. But where does this come from? Let's break it down a bit more.
+Starting with the definition of the covariance between features $i$ and $j$:
+$$
+\begin{align*}
+\hat{\Sigma}_{ij} &= \frac{1}{n-1}\sum_{k=1}^{n}\overbrace{\bigl(x^{(i)}_k-\bar{x}_i\bigr)}^{\text{deviation from mean}}\,\bigl(x^{(j)}_k-\bar{x}_j\bigr)\\
+\sigma_i^2 & = \hat\Sigma_{ii}=\frac{1}{n-1}\sum_{k=1}^{n}(x_k^{(i)}-\bar x_i)^2,\quad\sigma_j^2=\hat\Sigma_{jj} = \frac{1}{n-1}\sum_{k=1}^{n}(x_k^{(j)}-\bar x_j)^2\\
+\rho_{ij} &= \frac{\displaystyle
+  \overbrace{\frac{1}{n-1}\sum_{k=1}^n\bigl(x^{(i)}_k-\bar{x}_i\bigr)\,\bigl(x^{(j)}_k-\bar{x}_j\bigr)}^{\hat\Sigma_{ij}}}{
+  \underbrace{\sqrt{\frac{1}{n-1}\sum_{k=1}^n\bigl(x^{(i)}_k-\bar{x}_i\bigr)^2}}_{\sigma_i}
+  \;\underbrace{\sqrt{\frac{1}{n-1}\sum_{k=1}^n\bigl(x^{(j)}_k-\bar{x}_j\bigr)^2}}_{\sigma_j}
+} = \frac{\hat\Sigma_{ij}}{\sigma_i\,\sigma_j}  \quad\Longrightarrow\quad \boxed{\hat\Sigma_{ij} = \sigma_i\,\sigma_j\,\rho_{ij}\quad\blacksquare}
+\end{align*}
+$$ 
+
+However, computing the correlation $\rho_{ij}$ is not necessary to compute the covariance matrix $\hat{\mathbf{\Sigma}}$ directly. We can compute the covariance matrix from the data matrix $\mathbf{X} \in\mathbb{R}^{n \times m}$ (rows = observations/time periods, columns = variables/features) where each row $k$ contains the values for all $m$ features at sample $k$:
+$$
+\mathbf{X} = \begin{bmatrix}
+x_1^{(1)} & x_1^{(2)} & \cdots & x_1^{(m)} \\
+x_2^{(1)} & x_2^{(2)} & \cdots & x_2^{(m)} \\
+\vdots & \vdots & \ddots & \vdots \\
+x_n^{(1)} & x_n^{(2)} & \cdots & x_n^{(m)}
+\end{bmatrix}
+$$
+To center the data, we need to subtract the mean for each feature. Let $\mathbf{m} = [\bar{x}_1, \bar{x}_2, \ldots, \bar{x}_m]^{\top}$ be the vector containing the mean for each feature. The centered data matrix is:
+$$
+\tilde{\mathbf{X}} = \mathbf{X} - \mathbf{1}\mathbf{m}^{\top}
+$$
+where $\mathbf{1} \in \mathbb{R}^{n}$ is a vector of ones, and $\mathbf{1}\mathbf{m}^{\top}$ creates an $n \times m$ matrix where each row is identical and contains the means. 
+> __Outer product:__ The $\mathbf{1}\mathbf{m}^{\top}$ is an example of an outer product. The [outer product](https://en.wikipedia.org/wiki/Outer_product) of two vectors $\mathbf{a} \in \mathbb{R}^{n}$ and $\mathbf{b} \in \mathbb{R}^{m}$ is the $n \times m$ matrix $\mathbf{a}\mathbf{b}^{\top}$. Each element of the outer product is computed as $(\mathbf{a}\mathbf{b}^{\top})_{ij} = a_i b_j$. 
+
+The empirical covariance matrix is then:
+$$
+\hat{\mathbf{\Sigma}} = \frac{1}{n-1}\tilde{\mathbf{X}}^{\top}\tilde{\mathbf{X}}
+$$
+
+> __Covariance Matrix Properties:__
+>
+> The covariance matrix $\hat{\mathbf{\Sigma}}$ has the following (important) properties:
+> * __Elements__: The diagonal elements of the covariance matrix $\hat{\Sigma}_{ii}\in\hat{\mathbf{\Sigma}}$ are the variances of feature $i$ (always non-negative), while the off-diagonal elements $\hat{\Sigma}_{ij}\in\hat{\mathbf{\Sigma}}$ for $i\neq{j}$ measure the covariance between features $i$ and $j$ in the dataset $\mathcal{D}$. The sign and magnitude of the covariance $\hat{\Sigma}_{ij}$ indicate the strength and direction of the linear relationship between features $i$ and $j$.
+>
+> * __Positive, negative, or no relationship?__: If $\hat{\Sigma}_{ij} > 0$, then features $i$ and $j$ are positively correlated, meaning that when one feature increases above its mean, the other feature also tends to increase above its mean. If $\hat{\Sigma}_{ij} < 0$, then features $i$ and $j$ are negatively correlated, meaning that when one feature increases above its mean, the other feature tends to decrease below its mean. If $\hat{\Sigma}_{ij} = 0$, then features $i$ and $j$ are uncorrelated, meaning that there is no linear relationship between the two features.
+>
+> * __Symmetry__: The covariance matrix $\hat{\mathbf{\Sigma}}$ is symmetric, meaning that $\hat{\Sigma}_{ij} = \hat{\Sigma}_{ji}$ for all $i$ and $j$. This follows directly from the definition of covariance.
+>
+> * __Positive Semi-Definite__: The covariance matrix $\hat{\mathbf{\Sigma}}$ is positive semi-definite, meaning that for any vector $\mathbf{v} \in \mathbb{R}^m$, we have $\mathbf{v}^{\top}\hat{\mathbf{\Sigma}}\mathbf{v} \geq 0$. This property ensures that the matrix can be used for valid probability distributions and optimization problems.
+
+Since covariance matrices are symmetric and positive semi-definite, they have special properties that make eigendecomposition particularly interesting and numerically stable. 
+___
+
+## Power iteration
+Now that we understand eigendecomposition conceptually, the question becomes: how do we *compute* eigenvalues and eigenvectors in practice? Let's start with a simple approach to compute the largest eigenvalue/eigenvector pair: __the power iteration method.__
+
+
+The [power iteration method](https://en.wikipedia.org/wiki/Power_iteration) is an iterative algorithm to compute the largest eigenvalue and its corresponding eigenvector of a square (real) matrix; we'll consider only real-valued matrices here, but this approach can also be used for matrices with complex entries. 
+
+> __Application:__ The most famous application of [power iteration](https://en.wikipedia.org/wiki/Power_iteration) is the [Google PageRank algorithm](https://epubs.siam.org/doi/10.1137/050623280)  which uses power iteration, utilizes the dominant eigenvalue and its corresponding eigenvector of a link connection matrix to assess the importance of web pages within a connection network.
+
+How does the [power iteration method](https://en.wikipedia.org/wiki/Power_iteration) work?
+
+__Phase 1: Eigenvector__: Suppose we have a real-valued square _diagonalizable_ matrix $\mathbf{A}\in\mathbb{R}^{m\times{m}}$ with $m$ eigenvalues. We order the eigenvalues by their absolute values (magnitudes) as $|\lambda_{1}|\geq|\lambda_{2}|\geq\dots\geq|\lambda_{m}|$, where $\lambda_{1}$ is the __dominant (largest magnitude) eigenvalue__, $\lambda_{2}$ is the second-largest, and so on. The power iteration method targets the eigenvector $\mathbf{v}_{1}\in\mathbb{C}^{m}$ corresponding to the dominant eigenvalue $\lambda_{1}\in\mathbb{C}$, which can be (iteratively) estimated as:
+$$
+\mathbf{v}_{1}^{(k+1)} = \frac{\mathbf{A}\mathbf{v}_{1}^{(k)}}{\lVert \mathbf{A}\mathbf{v}_{1}^{(k)} \rVert_{2}}\quad{k=0,1,2\dots}
+$$
+
+where $\lVert \star \rVert_{2}$ denotes the [L2 (Euclidean) vector norm](https://mathworld.wolfram.com/L2-Norm.html). The [power iteration method](https://en.wikipedia.org/wiki/Power_iteration) converges to the eigenvector as $k\rightarrow\infty$ when the dominant eigenvalue is __strictly separated__ from the second-largest, i.e., $|\lambda_{1}| > |\lambda_{2}|$ (equivalently, the ratio $|\lambda_{1}|/|\lambda_{2}| > 1$), and the initial guess $\mathbf{v}_{1}^{(0)}$ has a non-zero component in the direction of the true eigenvector $\mathbf{v}_{1}$ (in practice, a random vector almost always satisfies this condition).
+
+__Phase 2: Eigenvalue__: Once we have an estimate for the eigenvector $\hat{\mathbf{v}}_{1}$, we can estimate the corresponding eigenvalue $\hat{\lambda}_{1}$ using [the Rayleigh quotient](https://en.wikipedia.org/wiki/Rayleigh_quotient). From the eigenvalue equation $\mathbf{A}\hat{\mathbf{v}}_{1} \approx \hat{\lambda}_{1}\hat{\mathbf{v}}_{1}$, we take the inner product of both sides with $\hat{\mathbf{v}}_{1}$:
+$$
+\hat{\mathbf{v}}_{1}^{\top}\mathbf{A}\hat{\mathbf{v}}_{1} \approx \hat{\lambda}_{1}\,\hat{\mathbf{v}}_{1}^{\top}\hat{\mathbf{v}}_{1}
+$$
+Solving for $\hat{\lambda}_{1}$ gives the Rayleigh quotient:
+$$
+\hat{\lambda}_{1} \approx \frac{\hat{\mathbf{v}}_{1}^{\top}\mathbf{A}\hat{\mathbf{v}}_{1}}{\hat{\mathbf{v}}_{1}^{\top}\hat{\mathbf{v}}_{1}} = \frac{\left<\mathbf{A}\hat{\mathbf{v}}_{1},\hat{\mathbf{v}}_{1}\right>}{\left<\hat{\mathbf{v}}_{1},\hat{\mathbf{v}}_{1}\right>}
+$$
+For a normalized eigenvector (i.e., $\lVert\hat{\mathbf{v}}_{1}\rVert_{2} = 1$), this simplifies to $\hat{\lambda}_{1} \approx \hat{\mathbf{v}}_{1}^{\top}\mathbf{A}\hat{\mathbf{v}}_{1}$.
+To implement the power iteration method, we need to specify initialization parameters, iterate until convergence, and check for termination. Here's the algorithmic structure:
+
+Let's explore a pseudo-code implementation of the [power iteration method](https://en.wikipedia.org/wiki/Power_iteration) to estimate the largest eigenvalue and its corresponding eigenvector of a matrix $\mathbf{A}$.
+
+__Initialization__: Given a real-valued square matrix $\mathbf{A}\in\mathbb{R}^{m\times{m}}$, we specify $\epsilon>0$ as the convergence tolerance, `maxiter` as the maximum number of iterations, an initial guess for the eigenvector $\mathbf{v}_{1}^{(0)}$ (we'll use a random vector), an iteration counter $k\gets{1}$, and a boolean variable $\texttt{converged}\gets{\texttt{false}}$ to indicate whether the algorithm has converged.
+
+> __Parameter selection rules of thumb__:
+> 
+> * __Convergence tolerance__ $\epsilon$: A good starting point is $\epsilon = 10^{-6}$ to $10^{-8}$ for most practical applications. For higher precision requirements, use $\epsilon = 10^{-10}$ to $10^{-12}$. The choice depends on the desired accuracy and the condition number of the matrix.
+> 
+> * __Maximum iterations__ `maxiter`: The number of iterations needed depends primarily on the eigenvalue separation ratio $r = |\lambda_{2}|/|\lambda_{1}|$, not on matrix size. The error decreases as $O(r^k)$, so the required iterations scale approximately as $k \approx -\log(\epsilon)/\log(1/r)$. For well-separated eigenvalues ($r \leq 0.5$), use `maxiter = 100` to `500`. For moderate separation ($0.5 < r < 0.9$), use `maxiter = 500` to `2000`. For poorly separated eigenvalues ($r \geq 0.9$), convergence may be very slow and require `maxiter ≥ 5000` or alternative methods. Matrix size affects computational time per iteration but not the number of iterations needed.
+> 
+> * __When to worry about convergence__: If the algorithm doesn't converge within the maximum iterations, this typically indicates that the dominant eigenvalue is not well-separated from the second-largest eigenvalue ($|\lambda_{1}|/|\lambda_{2}| \approx 1$), or the matrix may have complex eigenvalues with equal moduli. In such cases, consider using more sophisticated methods like the QR algorithm or Arnoldi iteration.
+
+Normalize the initial guess for the eigenvector: $\mathbf{v}_{1}^{(0)} \gets \frac{\mathbf{v}_{1}^{(0)}}{\lVert \mathbf{v}_{1}^{(0)} \rVert_{2}}$.
+
+While not $\texttt{converged}$ __do__:
+- Compute the matrix-vector product $\mathbf{y}^{(k)}\gets\mathbf{A}\mathbf{v}_{1}^{(k-1)}$.
+- Normalize the vector $\mathbf{v}_{1}^{(k)}\gets{\mathbf{y}^{(k)}}/{\lVert \mathbf{y}^{(k)} \rVert_{2}}$.
+- Compute the Rayleigh quotient to estimate the eigenvalue: $\hat{\lambda}_{1}^{(k)} \gets  {\mathbf{v}_{1}^{(k)\top}\mathbf{A}\mathbf{v}_{1}^{(k)}}/{\mathbf{v}_{1}^{(k)\top}\mathbf{v}_{1}^{(k)}}$.
+   1. If $\lVert \mathbf{v}_{1}^{(k)} - \mathbf{v}_{1}^{(k-1)} \rVert_{2}\leq\epsilon$, then set $\texttt{converged}\gets{\texttt{true}}$ and return $\hat{\lambda}_{1} = \hat{\lambda}_{1}^{(k)}$ and $\hat{\mathbf{v}}_{1} = \mathbf{v}_{1}^{(k)}$.
+   2. If $k\geq\texttt{maxiter}$, then set $\texttt{converged}\gets{\texttt{true}}$ to terminate the algorithm, return the last estimate of the eigenvalue and eigenvector (optionally flagging that convergence tolerance was not met).
+   3. Increment $k\gets{k+1}$.
+
+While simple to implement, the [power iteration method](https://en.wikipedia.org/wiki/Power_iteration) may exhibit slow convergence, mainly when the largest eigenvalue is close in magnitude to other eigenvalues, i.e., $|\lambda_{1}|/|\lambda_{2}| \sim 1$.
+
+> __Example__
+> 
+>
+> [▶ Exploring eigendecomposition of a two-dimensional data cloud](CHEME-5820-L2a-Example-Eigendecomposition-2D-Spring-2026.ipynb). In this example, we generate a two-dimensional dataset, compute its covariance matrix, and perform eigendecomposition to identify principal components. We visualize the data along with the eigenvectors to illustrate how they capture the directions of maximum variance.
+>
+> [▶ Let's use the power iteration method to analyze stoichiometric matrices](CHEME-5820-L2a-Example-FunWithPowerIteration-Spring-2026.ipynb). In this example, we implement the power iteration method to compute the dominant eigenvalue and eigenvector of a symmetric positive definite matrix, visualize convergence behavior, and examine how different parameters affect the algorithm's performance.
+
+
+___
+
+## Summary
+Eigendecomposition reveals the fundamental directions and scaling factors of linear transformations through eigenvalues and eigenvectors, with the power iteration method providing an efficient iterative approach to compute dominant eigenpairs.
+
+> __Key Takeaways:__
+>
+> * **Eigendecomposition decomposes matrices into eigenpairs:** Eigenvalues and eigenvectors satisfy a fundamental relationship where applying a matrix to its eigenvector only scales that vector by the corresponding eigenvalue. Diagonalizable matrices can be expressed as a product of an eigenvector matrix, a diagonal eigenvalue matrix, and the inverse of the eigenvector matrix. Symmetric real matrices have real eigenvalues and orthogonal eigenvectors, making them particularly useful for analyzing covariance matrices and other data-driven applications.
+> * **Power iteration efficiently estimates the dominant eigenpair:** The iterative method repeatedly applies the matrix to a vector and normalizes the result, converging to the largest magnitude eigenvalue and its eigenvector when the dominant eigenvalue is strictly separated from the second-largest. Convergence speed depends on the ratio between these two eigenvalues. The Rayleigh quotient provides an accurate estimate of the eigenvalue from an approximate eigenvector.
+> * **Eigenvalues and eigenvectors have geometric and data-analytic interpretations:** Eigenvectors represent invariant directions under the linear transformation defined by a matrix—directions that remain unchanged except for scaling. Eigenvalues are the scaling factors along those directions. For covariance matrices, eigenvectors identify principal directions of variance and eigenvalues quantify the variance magnitude along each direction. Applications include principal component analysis, spectral clustering, and network centrality analysis.
+
+
+Eigenvector methods are foundational for discovering structure in complex datasets and dynamical systems.
+___
