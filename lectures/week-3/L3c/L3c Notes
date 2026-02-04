@@ -1,0 +1,106 @@
+#= 
+ 
+- Logistic Regression for Binary Classification 
+    - Derive Boltzmann distributions from logistc regression
+- Perceptron for Binary Classification 
+
+Example --> bank note with two classes 
+Goal --> Build confident model for fraud detection 
+How --> find a separating hyperplane (linear) to separate data 
+
+In some dimensional space, there is a plane that lies in between data from one class and another. 
+
+You can also generate non-linearly separable data --> instead of being linearly separable, you can separate with a shape! 
+
+
+Perceptron 
+Labeled Dataset D = {(x,y)} with n examples and each example is labeled into a category by an expert 
+(activation function, sigma) y £ {-1,1}
+    - ø (star) = sign (star)
+
+Logistic regression uses boltzmann distribution to turn label into a probability 
+
+Difference is the activation function 
+
+(1) Start with Perceptron 
+    - Labeled data set D
+    - measure m features in vector x(i) 
+    - class label is -1,1
+    - y = sign (transpose of augmented features vector * theta, a column vector of classifier parameters)
+        - augmented features x(i)T are p=m+1 vectors
+        - z = inner product 
+        - if sign (z) ≥ 0 --> 1
+        - if sign (z) < 0 --> -1
+        - experience is stored in parameter vector (theta): learned from data 
+        - will converge and guarantee perfect separation if linearly separable, if not it can go on forever 
+
+    Pseudocode:
+
+    Rule of thumb for max iterations is (10 - 100) n, n is numebr of training examples
+    Medical applications, go to 0 mistakes. Some cases do not need as much error 
+    
+    While true do: 
+        for each dataset, compute y 
+        if y ≤ 0, and true label is ≤ 0, correct label 
+        i.e. if sign of prediction does not match the label, misclassified
+        update parameter theta --> learns from mistakes
+        if mistakes ≤ threshold, converge 
+          else, continue learning from mistakes and go through data again 
+        end 
+
+this could enter an infinite loop if you have a low 
+hyperplane is theta = w,b --> w is the slope, b is the intercept 
+repeaterdly checking if the line is separated properly in the hyperplane 
+
+
+
+Example --> 
+data is arranged so top is not forged, bottom is forged 
+split data into x (features) and y (classes) 
+random pertubation of the data to train the data 
+    s is the fraction of data used for training 
+    testing is data that perceptron will use to test (does not learn from this)
+need to check the balance of data from different class 
+
+when you count the number of errors, count mistakes from the training data 
+
+
+test data had 16 errors
+now for the test data, do the confusion matrix : 
+confusion matrix: 
+                        column 1 is predicted positive      column 2 is predicted negative 
+row 1 actual positive       true positive (TP)                      false negative (FN)
+row 2 acutal negative       false positive (FP)                       true negative (TN)
+
+big numbers on diagonal --> GOOD 
+small numbers on other diagonal --> GOOD 
+
+if FN, FP are larger than TP or TN, could be an indicator of biased 
+unbiased msitakes 
+ 
+Confusion matrix on test data (test data is much smaller than total data) has 3 errors 
+Result from example: 
+112     2 
+1       159 
+
+What does this tell us? 
+- dataset is highly separable, almost linearly separable 
+
+
+
+
+LOGISTIC REGRESSION 
+- y {-1,1} is a state on Boltzmann distribution conditioned on the input of x^ (augmented features, length is m+1)
+- Every state y has an energy (E(y,x^) and an inverse temperature (Beta) which are used to build the probability
+        P(y | x^) =     [ exp (-BE(y,x^))]  /   [SUM (exp (-BE(y,x^)))]
+        - in binary -1,1 case, the sum function is possible to calculate and the probability can be calculated 
+        - large beta means probability distribution is sharper
+            B --> infinity , sharper distribution, temperature is going down, (frozen state, no movement and no uncertainty)
+            B --> 0 , maximum uncertainty, means system is REALLY hot (1/T) 
+            B = 1 is a baseline balance between uncer
+        - Energy(y,x^) = - y(x^theta) 
+            energy for y = +1 is high 
+            energy for y = -1 is low 
+        - maximize log likelihood and compute probaility that we see a particular label by minimizing negative log likelihood 
+            cross-entropy loss function 
+            gert optimal parameters from theta from this 
