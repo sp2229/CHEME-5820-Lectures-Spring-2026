@@ -1,0 +1,115 @@
+=#
+Logistic Regression and Perceptron 
+- Perceptron was first neural network created in Cornell 
+- Perceptron should work with linearly separable data BUT we are going to model
+
+confusion matrix: 
+                        column 1 is predicted positive      column 2 is predicted negative 
+row 1 actual positive       true positive (TP)                      false negative (FN)
+row 2 acutal negative       false positive (FP)                       true negative (TN)
+
+Different Label Functions: 
+L(x,y) = (y ≥ 0) ? true : false; # rotated half circle (linearly separable)
+    Stopped after number of iterations: 2. We have number of errors: 0
+        2×2 Matrix{Int64}:
+        402    0
+        0  398
+L(x,y) = (x ≥ 0) && (y ≥ 0) ? true : false; # wedge pattern (not linearly separable)
+    Stopped after number of iterations: 120000. We have number of errors: 212
+        2×2 Matrix{Int64}:
+        142   84
+        47  527
+L(x,y) = xor(x ≥ 0,y ≥ 0); # XOR pattern alternating pie wedges (not linearly separable)
+    Stopped after number of iterations: 20001. We have error: 174.98857376907864
+        2×2 Matrix{Int64}:
+        210  218
+        198  174
+
+
+How to Train a Perecptron? 
+
+    perceptron_model = let
+        
+        # setup
+        D = training; # what dataset are we going to use?
+        number_of_examples = size(D,1); # how many examples do we have (rows)
+        number_of_features = size(D,2); # how many features do we have (cols)?
+        X = [D[:,1:end-1] ones(number_of_examples)]; # features, what??
+        y = D[:,end]; # output: this is the target data (label)
+        maxiter = 100*number_of_examples
+        
+        # build an initial model
+        model = build(MyPerceptronClassificationModel, (
+            parameters = ones(number_of_features),
+            mistakes = 0 # willing to live with m mistakes
+        ));
+
+        # train the model -
+        trainedmodel = learn(X,y,model, maxiter = maxiter, verbose = true);
+
+        # return -
+        trainedmodel;
+    end;
+
+
+
+
+
+LOGISTIC REGRESSION MODEL 
+
+
+model_logistic = let
+
+    # data -
+    D = training; # what dataset are we going to use?
+    number_of_examples = size(D,1); # how many examples do we have (rows)
+    X = [D[:,1:end-1] ones(number_of_examples)]; # features: remove label and add bias term
+    y = D[:,end]; # output: this is the target data (label)
+    number_of_features = size(X,2); # total features including bias
+    T = 1.0; # inverse temperature for logistic regression
+    h = 1e-6; # step size for finite difference gradient approximation
+    λ = 0.0; # regularization parameter
+    ϵ = 1e-6; # tolerance for convergence
+    maxiter = 20000; # maximum number of iterations for learning
+
+    # model
+    model = build(MyLogisticRegressionClassificationModel, (
+        parameters = 0.01*ones(number_of_features), # initial value for the parameters: these will be updated
+        learning_rate = 0.005, # you pick this
+        ϵ = ϵ, # you pick this (this is the tolerance for convergence)
+        h = h, # you pick this (this is the step size for finite difference gradient approximation)
+        λ = λ, # regularization parameter
+        T = T, # inverse temperature for logistic regression
+        loss_function = (x,y,T,λ,θ) -> log(1+exp(-2*y*T*(dot(x,θ)))) + λ*norm(θ,2)^2 # cross-entropy loss with L2 regularization
+    ));
+
+    # train -
+    model = learn(X,y,model, maxiter = maxiter, verbose = true); # this is learning the model parameters
+
+    # return -
+    model;
+end; 
+
+
+
+Different Label Functions: 
+L(x,y) = (y ≥ 0) ? true : false; # rotated half circle (linearly separable)
+    Stopped after number of iterations: 20001. We have error: 0.2858433901491822
+        2×2 Matrix{Int64}:
+        401    1
+        0  398
+L(x,y) = (x ≥ 0) && (y ≥ 0) ? true : false; # wedge pattern (not linearly separable)
+    Stopped after number of iterations: 20001. We have error: 174.98857376907864
+        2×2 Matrix{Int64}:
+        160   66
+        60  514
+L(x,y) = xor(x ≥ 0,y ≥ 0); # XOR pattern alternating pie wedges (not linearly separable)
+    Stopped after number of iterations: 20001. We have error: 1163.970150695823
+        2×2 Matrix{Int64}:
+        428  0
+        372  0
+
+
+
+Logistic regression model has less errors for non-linearly separable data but more errors for linearly separable data
+#=
