@@ -7,8 +7,8 @@ In this lecture, we explore positive-definite kernels and how they power our fir
 >
 > By the end of this lecture, you should be able to:
 >
+> * __Recognize kernel methods in previous work:__ Understand that the empirical covariance matrix from L2a is a Gram matrix built from the linear kernel, connecting PCA to kernel methods.
 > * __Kernel Function Definition:__ Understand what kernel functions are, their role as similarity measures, and the mathematical requirements (symmetry, positive semi-definiteness) for valid kernels.
-> * __Gram Matrix and Positive Semi-Definiteness:__ Learn how to construct Gram matrices from data and verify that kernel matrices satisfy positive semi-definiteness constraints.
 > * __Kernel Ridge Regression:__ Understand how kernel functions enable non-parametric regression through the "kernel trick" and how to derive the dual formulation with α coefficients.
 
 
