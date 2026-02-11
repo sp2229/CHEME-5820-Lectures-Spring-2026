@@ -18,7 +18,6 @@ We will use the following notation throughout:
 ___
 
 ## Matrix multiplication as inner products
-
 The first step toward connecting covariance and kernels is to recognize a fundamental fact about matrix multiplication: every entry of a matrix product is an inner product. This observation is what makes the covariance matrix a Gram matrix.
 
 > **Fact (Matrix products as tables of inner products).** Let $\mathbf{A}\in\mathbb{R}^{n\times p}$ and $\mathbf{B}\in\mathbb{R}^{n\times q}$, with columns $\mathbf{A} = [\mathbf{a}_1 \;\; \cdots \;\; \mathbf{a}_p]$ and $\mathbf{B} = [\mathbf{b}_1 \;\; \cdots \;\; \mathbf{b}_q]$, where $\mathbf{a}_i, \mathbf{b}_j \in \mathbb{R}^n$. Then the $(i,j)$ entry of $\mathbf{A}^\top\mathbf{B}$ is:
