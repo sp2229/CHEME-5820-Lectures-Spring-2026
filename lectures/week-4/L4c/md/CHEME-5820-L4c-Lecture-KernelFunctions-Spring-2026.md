@@ -132,7 +132,12 @@ $$
 \hat{\mathbf{X}}(\hat{\mathbf{X}}^{\top}\hat{\mathbf{X}}+\lambda\,\mathbf{I})\hat{\mathbf{X}}^{\top}\alpha & = \hat{\mathbf{X}}\hat{\mathbf{X}}^{\top}\mathbf{y}\quad\mid\text{multiply both sides by $\hat{\mathbf{X}}$ on the left} \\
 (\hat{\mathbf{X}}\hat{\mathbf{X}}^{\top}+\lambda\,\mathbf{I})\hat{\mathbf{X}}\hat{\mathbf{X}}^{\top}\alpha & = \hat{\mathbf{X}}\hat{\mathbf{X}}^{\top}\mathbf{y}\quad\mid\text{key step: see explanation below}\\
 (\mathbf{K}+\lambda\,\mathbf{I})\mathbf{K}\alpha & = \mathbf{K}\mathbf{y}\quad\mid\text{substitute $\mathbf{K} = \hat{\mathbf{X}}\hat{\mathbf{X}}^{\top}$}\\
-\alpha &= (\mathbf{K}+\lambda\mathbf{I})^{-1}\mathbf{K}\mathbf{y}\quad\mid\text{multiply both sides by $(\mathbf{K}+\lambda\mathbf{I})^{-1}$ on the left}
+\mathbf{K}^{-1}(\mathbf{K}+\lambda\,\mathbf{I})\mathbf{K}\alpha & = \mathbf{K}^{-1}\mathbf{K}\mathbf{y}\quad\mid\text{multiply both sides by $\mathbf{K}^{-1}$ on the left}\\
+(\mathbf{K}^{-1}\mathbf{K}+\lambda\mathbf{K}^{-1})\mathbf{K}\alpha & = \mathbf{y}\quad\mid\text{distribute $\mathbf{K}^{-1}$ on the left; simplify right side}\\
+(\mathbf{I}+\lambda\mathbf{K}^{-1})\mathbf{K}\alpha & = \mathbf{y}\quad\mid\text{simplify $\mathbf{K}^{-1}\mathbf{K} = \mathbf{I}$}\\
+\mathbf{K}\alpha+\lambda\mathbf{I}\alpha & = \mathbf{y}\quad\mid\text{distribute $\mathbf{K}$ on the left}\\
+(\mathbf{K}+\lambda\,\mathbf{I})\alpha & = \mathbf{y}\quad\mid\text{factor out $\alpha$}\\
+\alpha &= (\mathbf{K}+\lambda\mathbf{I})^{-1}\mathbf{y}\quad\mid\text{multiply both sides by $(\mathbf{K}+\lambda\mathbf{I})^{-1}$ on the left}
 \end{align*}
 $$
 
@@ -140,11 +145,11 @@ $$
 > $$\hat{\mathbf{X}}(\hat{\mathbf{X}}^{\top}\hat{\mathbf{X}}+\lambda \mathbf{I})\hat{\mathbf{X}}^{\top} = (\hat{\mathbf{X}}\hat{\mathbf{X}}^{\top}+\lambda \mathbf{I})\hat{\mathbf{X}}\hat{\mathbf{X}}^{\top}$$
 > follows by expanding both sides. It moves the computation from feature space ($p\times p$) to sample space ($n\times n$). When $p \gg n$, the sample-space system is far cheaper; when $n \gg p$, the feature-space formulation may be preferable.
 
-where $\mathbf{K}$ is the Gram matrix with entries $K_{ij}=k(\mathbf{x}_i,\mathbf{x}_j)$ (symmetric and positive semidefinite by kernel validity), $\mathbf{I}$ is the identity matrix, $\mathbf{y}$ is the observed output vector, and $\lambda\geq{0}$ is the regularization parameter. For the linear kernel, this reduces to $\mathbf{K}=\hat{\mathbf{X}}\hat{\mathbf{X}}^{\top}$.
+where $\mathbf{K}$ is the Gram matrix with entries $K_{ij}=k(\mathbf{x}_i,\mathbf{x}_j)$ (symmetric and positive semidefinite by kernel validity), $\mathbf{I}$ is the identity matrix, $\mathbf{y}$ is the observed output vector, and $\lambda\geq{0}$ is the regularization parameter. 
 
 > **Regularization intuition:**  As $\lambda \to 0$, the solution emphasizes fitting the training data (high variance, low bias). As $\lambda \to \infty$, the solution shrinks $\alpha$ toward zero (low variance, high bias). The choice of $\lambda$ controls this bias-variance tradeoff and is typically selected via cross-validation.
 
-In practice, $\alpha = (\mathbf{K}+\lambda\mathbf{I})^{-1}\mathbf{K}\mathbf{y}$ simplifies in implementation since we can factor or directly solve the linear system.
+In practice, $\alpha = (\mathbf{K}+\lambda\mathbf{I})^{-1}\mathbf{y}$ simplifies in implementation since we can factor or directly solve the linear system.
 
 > __Technical Note__: We derived $\alpha$ using the linear kernel Gram matrix $\mathbf{K} = \hat{\mathbf{X}}\hat{\mathbf{X}}^{\top}$. The solution depends only on kernel evaluations, so any valid kernel can replace $\mathbf{K}$ without changing the algorithm.
 
@@ -152,7 +157,7 @@ In practice, $\alpha = (\mathbf{K}+\lambda\mathbf{I})^{-1}\mathbf{K}\mathbf{y}$ 
 
 Predictions depend only on inner products between data points. By substituting $k(\hat{\mathbf{z}},\hat{\mathbf{x}}_{i})$ for $\left\langle\hat{\mathbf{z}},\hat{\mathbf{x}}_{i}\right\rangle$, we can work in high-dimensional feature spaces without explicitly constructing them.
 
-> __The Kernel Trick__: Express predictions as inner products, then replace those inner products with kernel evaluations. The algorithm stays the same; only the similarity function changes. We always solve $\alpha = (\mathbf{K}+\lambda\mathbf{I})^{-1}\mathbf{K}\mathbf{y}$ using a kernel matrix. By choosing different kernels (linear, polynomial, RBF), we adapt to different feature spaces while maintaining the same mathematical framework.
+> __The Kernel Trick__: Express predictions as inner products, then replace those inner products with kernel evaluations. The algorithm stays the same; only the similarity function changes. We always solve $\alpha = (\mathbf{K}+\lambda\mathbf{I})^{-1}\mathbf{y}$ using a kernel matrix. By choosing different kernels (linear, polynomial, RBF), we adapt to different feature spaces while maintaining the same mathematical framework.
 
 ___
 
@@ -164,11 +169,9 @@ Kernel functions are similarity measures that enable memory-based learning for m
 
 > __Key Takeaways:__
 >
-> * __The covariance matrix was a kernel matrix all along.__ The empirical covariance $\hat{\mathbf{\Sigma}} = \frac{1}{n-1}\tilde{\mathbf{X}}^\top\tilde{\mathbf{X}}$ is a scaled Gram matrix under the linear kernel. All of our PCA work from L2a was implicitly a linear kernel method (see the [derivation](CHEME-5820-L4c-Derivation-Covariance-Redux-Spring-2026.ipynb) for the full proof).
-> * __Nonlinear kernels generalize this idea.__ By replacing the linear kernel with polynomial or RBF kernels, we capture nonlinear relationships between features or samples using the same Gram matrix and eigendecomposition machinery.
-> * __Valid kernels must be symmetric and positive semidefinite__, ensuring the corresponding Gram matrices have the spectral properties needed for all kernel-based algorithms.
-> * __The kernel trick__ allows us to work implicitly in high-dimensional spaces by replacing inner products $\langle\mathbf{z}_i, \mathbf{z}_j\rangle$ with kernel evaluations $k(\mathbf{z}_i, \mathbf{z}_j)$, enabling scalable algorithms.
-> * __Kernel ridge regression__ reformulates linear regression using a dual representation with coefficients $\alpha$, shifting from a model-centric view (fitting $\theta$) to a memory-based view (predictions as weighted combinations of training examples retained from the dataset).
+> * __Kernels generalize our previous work with covariance and PCA.__ The empirical covariance matrix is a scaled Gram matrix under the linear kernel. By replacing the linear kernel with polynomial or RBF kernels, we capture nonlinear relationships between features or samples using the same Gram matrix and eigendecomposition machinery (see the [derivation](CHEME-5820-L4c-Derivation-Covariance-Redux-Spring-2026.ipynb) for the full proof).
+> * __Valid kernels enable the kernel trick.__ Symmetric, positive semidefinite kernels correspond to inner products in possibly infinite-dimensional feature spaces. By replacing inner products with kernel evaluations, we work implicitly in high-dimensional spaces without explicitly constructing feature coordinates.
+> * __Kernel ridge regression shifts from model-centric to memory-based learning.__ The dual representation expresses predictions as weighted combinations of training examples retained from the dataset, enabling nonlinear regression through the choice of kernel function.
 
 Kernel methods form the mathematical foundation for support vector machines (SVMs), Gaussian process models, and other modern machine learning algorithms.
 
