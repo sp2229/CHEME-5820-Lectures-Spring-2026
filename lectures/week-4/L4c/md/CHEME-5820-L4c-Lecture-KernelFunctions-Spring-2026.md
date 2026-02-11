@@ -1,7 +1,7 @@
 # L4c: Kernel Functions and Kernel Regression
 In this lecture, we explore positive-definite kernels and how they power our first kernel machine: kernel regression.
 
-**You have already seen a matrix built using kernel functions.** The empirical covariance $\hat{\mathbf{\Sigma}} = \frac{1}{n-1}\mathbf{X}_c^\top\mathbf{X}_c$ from L2a is a scaled Gram matrix built from the linear kernel $k(\mathbf{a},\mathbf{b}) = \mathbf{a}^\top\mathbf{b}$ (see the [derivation](CHEME-5820-L4c-Derivation-Covariance-Redux-Spring-2026.ipynb)). What happens if we replace the linear kernel with something more flexible?
+**You have already seen a matrix built using kernel functions.** The empirical covariance $\hat{\mathbf{\Sigma}} = \frac{1}{n-1}\tilde{\mathbf{X}}^\top\tilde{\mathbf{X}}$ from L2a is a scaled Gram matrix built from the linear kernel $k(\mathbf{a},\mathbf{b}) = \mathbf{a}^\top\mathbf{b}$ (see the [derivation](CHEME-5820-L4c-Derivation-Covariance-Redux-Spring-2026.ipynb)). What happens if we replace the linear kernel with something more flexible?
 
 > __Learning Objectives:__
 >
@@ -77,7 +77,7 @@ Not every function is a valid kernel. Valid kernels must satisfy strict mathemat
 >
 > A function $k:\mathbb{R}^{m}\times\mathbb{R}^{m}\to\mathbb{R}$ is valid if, for any finite set $\{\mathbf{v}_1, \dots, \mathbf{v}_n\}$, the kernel matrix $\mathbf{K}$ with entries $K_{ij} = k(\mathbf{v}_i, \mathbf{v}_j)$ is symmetric and positive semidefinite. Equivalently, all eigenvalues of $\mathbf{K}$ are non-negative and $\mathbf{x}^{\top}\mathbf{K}\mathbf{x} \geq 0$ for any real vector $\mathbf{x}$.
 
-The covariance matrix $\mathbf{X}_c^\top\mathbf{X}_c$ from L2a was a Gram matrix of centered features under the linear kernel; $\mathbf{X}_c\mathbf{X}_c^\top$ was a Gram matrix of centered samples (see the [derivation](CHEME-5820-L4c-Derivation-Covariance-Redux-Spring-2026.ipynb) for the centering proof). More generally, for any valid kernel:
+The covariance matrix $\tilde{\mathbf{X}}^\top\tilde{\mathbf{X}}$ from L2a was a Gram matrix of centered features under the linear kernel; $\tilde{\mathbf{X}}\tilde{\mathbf{X}}^\top$ was a Gram matrix of centered samples (see the [derivation](CHEME-5820-L4c-Derivation-Covariance-Redux-Spring-2026.ipynb) for the centering proof). More generally, for any valid kernel:
 
 $$K_{ij} = k(\mathbf{v}_i, \mathbf{v}_j)$$
 
@@ -154,7 +154,7 @@ Kernel functions are similarity measures that enable non-parametric modeling of 
 
 > __Key Takeaways:__
 >
-> * __The covariance matrix was a kernel matrix all along.__ The empirical covariance $\hat{\mathbf{\Sigma}} = \frac{1}{n-1}\mathbf{X}_c^\top\mathbf{X}_c$ is a scaled Gram matrix under the linear kernel. All of our PCA work from L2a was implicitly a linear kernel method (see the [derivation](CHEME-5820-L4c-Derivation-Covariance-Redux-Spring-2026.ipynb) for the full proof).
+> * __The covariance matrix was a kernel matrix all along.__ The empirical covariance $\hat{\mathbf{\Sigma}} = \frac{1}{n-1}\tilde{\mathbf{X}}^\top\tilde{\mathbf{X}}$ is a scaled Gram matrix under the linear kernel. All of our PCA work from L2a was implicitly a linear kernel method (see the [derivation](CHEME-5820-L4c-Derivation-Covariance-Redux-Spring-2026.ipynb) for the full proof).
 > * __Nonlinear kernels generalize this idea.__ By replacing the linear kernel with polynomial or RBF kernels, we capture nonlinear relationships between features or samples using the same Gram matrix and eigendecomposition machinery.
 > * __Valid kernels must be symmetric and positive semi-definite__, ensuring the corresponding Gram matrices have the spectral properties needed for all kernel-based algorithms.
 > * __The kernel trick__ allows us to work implicitly in high-dimensional spaces by replacing inner products $\langle\mathbf{z}_i, \mathbf{z}_j\rangle$ with kernel evaluations $k(\mathbf{z}_i, \mathbf{z}_j)$, enabling scalable algorithms.

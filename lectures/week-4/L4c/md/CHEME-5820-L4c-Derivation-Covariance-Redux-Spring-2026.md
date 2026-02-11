@@ -5,7 +5,7 @@ The empirical covariance matrix $\hat{\mathbf{\Sigma}}$ plays a central role in 
 > We will show that the empirical covariance matrix is exactly a scaled linear-kernel Gram matrix on centered data, and that this relationship generalizes naturally to nonlinear kernels through implicit feature maps.
 >
 > Specifically, we will show three things:
-> * The empirical covariance matrix $\hat{\mathbf{\Sigma}} = \frac{1}{n-1}\mathbf{X}_c^\top\mathbf{X}_c$ can be expressed as a scaled Gram matrix of centered feature vectors using the linear kernel function.
+> * The empirical covariance matrix $\hat{\mathbf{\Sigma}} = \frac{1}{n-1}\tilde{\mathbf{X}}^\top\tilde{\mathbf{X}}$ can be expressed as a scaled Gram matrix of centered feature vectors using the linear kernel function.
 > * Centering a kernel matrix via $\mathbf{K}_c = \mathbf{H}\mathbf{K}\mathbf{H}$ is equivalent to applying the kernel to centered data, which requires proving key properties of the centering matrix $\mathbf{H}$
 > * For any positive semidefinite kernel with feature map $\phi$, the centered kernel matrix captures covariance in the (possibly infinite-dimensional) feature space
 
@@ -13,7 +13,7 @@ We will use the following notation throughout:
 * $\mathbf{x}_i \in \mathbb{R}^m$ denotes the feature vector for sample $i$, for $i = 1,\dots,n$. We can stack these row vectors into a data matrix $\mathbf{X} \in \mathbb{R}^{n\times m}$ where each row is a sample and each column is a feature.
 * $\bar{\mathbf{x}} = \frac{1}{n}\sum_{i=1}^n \mathbf{x}_i \in \mathbb{R}^m$ is the sample mean vector for each feature computed across all samples.
 * $\mathbf{1}\in\mathbb{R}^n$ is the vector of ones, and $\mathbf{H} = \mathbf{I}_n - \frac{1}{n}\mathbf{1}\mathbf{1}^\top \in \mathbb{R}^{n\times n}$ is the centering matrix
-* $\mathbf{X}_c = \mathbf{H}\mathbf{X} \in \mathbb{R}^{n\times m}$ is the centered data matrix (each row has the sample mean subtracted)
+* $\tilde{\mathbf{X}} = \mathbf{H}\mathbf{X} \in \mathbb{R}^{n\times m}$ is the centered data matrix (each row has the sample mean subtracted)
 
 ___
 
@@ -27,11 +27,11 @@ The first step toward connecting covariance and kernels is to recognize a fundam
 > $$
 > That is, $\mathbf{A}^\top\mathbf{B} \in \mathbb{R}^{p \times q}$ is a table of all pairwise inner products between columns of $\mathbf{A}$ and columns of $\mathbf{B}$.
 
-Now apply this to the centered data matrix. Write $\mathbf{X}_c = [\mathbf{f}_1 \;\; \mathbf{f}_2 \;\; \cdots \;\; \mathbf{f}_m]$ where $\mathbf{f}_j \in \mathbb{R}^n$ is the centered version of feature $j$ across all $n$ samples. Setting $\mathbf{A} = \mathbf{B} = \mathbf{X}_c$, the fact above tells us:
+Now apply this to the centered data matrix. Write $\tilde{\mathbf{X}} = [\mathbf{f}_1 \;\; \mathbf{f}_2 \;\; \cdots \;\; \mathbf{f}_m]$ where $\mathbf{f}_j \in \mathbb{R}^n$ is the centered version of feature $j$ across all $n$ samples. Setting $\mathbf{A} = \mathbf{B} = \tilde{\mathbf{X}}$, the fact above tells us:
 $$
-(\mathbf{X}_c^\top \mathbf{X}_c)_{ij} = \mathbf{f}_i^\top \mathbf{f}_j = \sum_{k=1}^n (x_{ki} - \bar{x}_i)(x_{kj} - \bar{x}_j)
+(\tilde{\mathbf{X}}^\top \tilde{\mathbf{X}})_{ij} = \mathbf{f}_i^\top \mathbf{f}_j = \sum_{k=1}^n (x_{ki} - \bar{x}_i)(x_{kj} - \bar{x}_j)
 $$
-The diagonal entries $(\mathbf{X}_c^\top \mathbf{X}_c)_{ii} = \|\mathbf{f}_i\|^2$ are squared norms (total centered variation in feature $i$), and the off-diagonal entries are dot products measuring the linear association between pairs of centered features. Scaling by $\frac{1}{n-1}$ turns these sums of products into sample covariances — which is precisely the definition of the empirical covariance matrix. This is the key link: covariance entries are inner products, so the covariance matrix is a Gram matrix.
+The diagonal entries $(\tilde{\mathbf{X}}^\top \tilde{\mathbf{X}})_{ii} = \|\mathbf{f}_i\|^2$ are squared norms (total centered variation in feature $i$), and the off-diagonal entries are dot products measuring the linear association between pairs of centered features. Scaling by $\frac{1}{n-1}$ turns these sums of products into sample covariances — which is precisely the definition of the empirical covariance matrix. This is the key link: covariance entries are inner products, so the covariance matrix is a Gram matrix.
 
 ___
 
@@ -71,23 +71,23 @@ ___
 
 With the inner-product view of matrix multiplication established, we can now formalize the connection to Gram matrices. Recall from L2a that the empirical covariance matrix $\hat{\mathbf{\Sigma}} \in \mathbb{R}^{m \times m}$ is defined as:
 $$
-\hat{\mathbf{\Sigma}} = \frac{1}{n-1}\mathbf{X}_c^\top \mathbf{X}_c
+\hat{\mathbf{\Sigma}} = \frac{1}{n-1}\tilde{\mathbf{X}}^\top \tilde{\mathbf{X}}
 $$
-where $\mathbf{X}_c = \mathbf{H}\mathbf{X}$ is the centered data matrix. Entry-wise, for features $i$ and $j$:
+where $\tilde{\mathbf{X}} = \mathbf{H}\mathbf{X}$ is the centered data matrix. Entry-wise, for features $i$ and $j$:
 $$
 \hat{\Sigma}_{ij} = \frac{1}{n-1}\sum_{k=1}^n (x_{ki} - \bar{x}_i)(x_{kj} - \bar{x}_j)
 $$
-where $x_{ki}$ denotes the value of feature $i$ in sample $k$, and $\bar{x}_i = \frac{1}{n}\sum_{k=1}^n x_{ki}$ is the sample mean of feature $i$. As we showed in the previous section, each entry of $\mathbf{X}_c^\top \mathbf{X}_c$ is a dot product between centered feature columns $\mathbf{f}_i$ and $\mathbf{f}_j$. A matrix whose entries are all dot products (inner products) between a collection of vectors is called a **Gram matrix**. So $\mathbf{X}_c^\top \mathbf{X}_c$ is the Gram matrix of the $m$ centered feature vectors $\{\mathbf{f}_1, \dots, \mathbf{f}_m\}$.
+where $x_{ki}$ denotes the value of feature $i$ in sample $k$, and $\bar{x}_i = \frac{1}{n}\sum_{k=1}^n x_{ki}$ is the sample mean of feature $i$. As we showed in the previous section, each entry of $\tilde{\mathbf{X}}^\top \tilde{\mathbf{X}}$ is a dot product between centered feature columns $\mathbf{f}_i$ and $\mathbf{f}_j$. A matrix whose entries are all dot products (inner products) between a collection of vectors is called a **Gram matrix**. So $\tilde{\mathbf{X}}^\top \tilde{\mathbf{X}}$ is the Gram matrix of the $m$ centered feature vectors $\{\mathbf{f}_1, \dots, \mathbf{f}_m\}$.
 
-> The diagonal entries $(\mathbf{X}_c^\top \mathbf{X}_c)_{ii} = \|\mathbf{f}_i\|^2$ are squared norms (total centered variation in feature $i$), and the off-diagonal entries are dot products measuring the linear association between pairs of centered features. Scaling by $\frac{1}{n-1}$ turns these sums of products into sample covariances, which is precisely the definition of the empirical covariance matrix. This is the key link: covariance entries are inner products, so the covariance matrix is a Gram matrix.
+> The diagonal entries $(\tilde{\mathbf{X}}^\top \tilde{\mathbf{X}})_{ii} = \|\mathbf{f}_i\|^2$ are squared norms (total centered variation in feature $i$), and the off-diagonal entries are dot products measuring the linear association between pairs of centered features. Scaling by $\frac{1}{n-1}$ turns these sums of products into sample covariances, which is precisely the definition of the empirical covariance matrix. This is the key link: covariance entries are inner products, so the covariance matrix is a Gram matrix.
 
 Now, define the **linear kernel**, the simplest possible kernel function, as:
 $$
 k(\mathbf{a}, \mathbf{b}) = \mathbf{a}^\top \mathbf{b}
 $$
-This kernel simply computes the dot product of its two inputs. When we use it to build a Gram matrix from the centered feature vectors, we get exactly $\mathbf{X}_c^\top \mathbf{X}_c$. Denoting this as $\mathbf{G}_\text{lin}$:
+This kernel simply computes the dot product of its two inputs. When we use it to build a Gram matrix from the centered feature vectors, we get exactly $\tilde{\mathbf{X}}^\top \tilde{\mathbf{X}}$. Denoting this as $\mathbf{G}_\text{lin}$:
 $$
-\mathbf{G}_\text{lin} = \mathbf{X}_c^\top \mathbf{X}_c \in \mathbb{R}^{m \times m}
+\mathbf{G}_\text{lin} = \tilde{\mathbf{X}}^\top \tilde{\mathbf{X}} \in \mathbb{R}^{m \times m}
 $$
 
 Therefore, the empirical covariance is just this Gram matrix divided by $n-1$:
@@ -96,8 +96,8 @@ $$
 $$
 
 > **Remark (Two Gram matrices from the same data).** The same data matrix produces two linear-kernel Gram matrices, depending on whether we take dot products between features or between samples:
-> * $\mathbf{G}_\text{lin} = \mathbf{X}_c^\top\mathbf{X}_c \in \mathbb{R}^{m \times m}$: dot products between **features**. This is the covariance matrix (up to the $\frac{1}{n-1}$ scaling).
-> * $\mathbf{K}_\text{lin} = \mathbf{X}_c\mathbf{X}_c^\top \in \mathbb{R}^{n \times n}$: dot products between **samples**, with entries $(\mathbf{K}_\text{lin})_{ij} = (\mathbf{x}_i - \bar{\mathbf{x}})^\top(\mathbf{x}_j - \bar{\mathbf{x}})$. This is the standard kernel matrix used in kernel methods.
+> * $\mathbf{G}_\text{lin} = \tilde{\mathbf{X}}^\top\tilde{\mathbf{X}} \in \mathbb{R}^{m \times m}$: dot products between **features**. This is the covariance matrix (up to the $\frac{1}{n-1}$ scaling).
+> * $\mathbf{K}_\text{lin} = \tilde{\mathbf{X}}\tilde{\mathbf{X}}^\top \in \mathbb{R}^{n \times n}$: dot products between **samples**, with entries $(\mathbf{K}_\text{lin})_{ij} = (\mathbf{x}_i - \bar{\mathbf{x}})^\top(\mathbf{x}_j - \bar{\mathbf{x}})$. This is the standard kernel matrix used in kernel methods.
 >
 > These two matrices share the same nonzero eigenvalues (as we proved in L3a using the SVD), but their eigenvectors live in different spaces: $\mathbf{G}_\text{lin}$ has eigenvectors in $\mathbb{R}^m$ (feature space), while $\mathbf{K}_\text{lin}$ has eigenvectors in $\mathbb{R}^n$ (sample space). This distinction becomes crucial in kernel PCA, where we work with $\mathbf{K}$ because we may never explicitly compute feature vectors.
 
@@ -113,7 +113,7 @@ But why does sandwiching $\mathbf{K}$ between two copies of $\mathbf{H}$ achieve
 
 > **Theorem (Centering equivalence).** For the linear kernel $k(\mathbf{x}_i, \mathbf{x}_j) = \mathbf{x}_i^\top\mathbf{x}_j$, centering the kernel matrix via $\mathbf{H}\mathbf{K}\mathbf{H}$ gives the same result as first centering the data and then building the kernel matrix:
 > $$
-> \mathbf{H}(\mathbf{X}\mathbf{X}^\top)\mathbf{H} = (\mathbf{H}\mathbf{X})(\mathbf{H}\mathbf{X})^\top = \mathbf{X}_c\mathbf{X}_c^\top
+> \mathbf{H}(\mathbf{X}\mathbf{X}^\top)\mathbf{H} = (\mathbf{H}\mathbf{X})(\mathbf{H}\mathbf{X})^\top = \tilde{\mathbf{X}}\tilde{\mathbf{X}}^\top
 > $$
 
 *Proof.* Start from the right-hand side and use the properties of $\mathbf{H}$ we established above:
@@ -128,7 +128,7 @@ The key step used only the symmetry of $\mathbf{H}$ (Property 1). Property 2 (id
 
 Therefore:
 $$
-\boxed{\mathbf{K}_c = \mathbf{H}(\mathbf{X}\mathbf{X}^\top)\mathbf{H} = \mathbf{X}_c\mathbf{X}_c^\top \quad\blacksquare}
+\boxed{\mathbf{K}_c = \mathbf{H}(\mathbf{X}\mathbf{X}^\top)\mathbf{H} = \tilde{\mathbf{X}}\tilde{\mathbf{X}}^\top \quad\blacksquare}
 $$
 
 This result is practically important: it means we can center in feature space using only the kernel matrix $\mathbf{K}$ and the centering matrix $\mathbf{H}$, without going back to the original data. This will be essential for nonlinear kernels, where the feature vectors may live in a very high-dimensional space and cannot be written down explicitly.
@@ -189,7 +189,7 @@ We have established the chain of relationships linking the empirical covariance 
 
 > **Key Takeaways:**
 >
-> * The empirical covariance matrix $\hat{\mathbf{\Sigma}} = \frac{1}{n-1}\mathbf{X}_c^\top \mathbf{X}_c$ is a scaled Gram matrix of centered feature vectors under the linear kernel; each entry is a dot product between centered features, divided by $n-1$
+> * The empirical covariance matrix $\hat{\mathbf{\Sigma}} = \frac{1}{n-1}\tilde{\mathbf{X}}^\top \tilde{\mathbf{X}}$ is a scaled Gram matrix of centered feature vectors under the linear kernel; each entry is a dot product between centered features, divided by $n-1$
 > * The centering matrix $\mathbf{H} = \mathbf{I}_n - \frac{1}{n}\mathbf{1}\mathbf{1}^\top$ is symmetric and idempotent (centering twice is the same as centering once), so centering the kernel matrix $\mathbf{K}_c = \mathbf{H}\mathbf{K}\mathbf{H}$ is equivalent to building the kernel from already-centered data
 > * For any kernel with a feature map $\phi$, the centered kernel matrix $\mathbf{K}_c$ measures covariance in the transformed feature space: $(\mathbf{K}_c)_{ij} = \langle \phi(\mathbf{x}_i) - \boldsymbol{\mu}_\phi, \phi(\mathbf{x}_j) - \boldsymbol{\mu}_\phi \rangle$
 > * The linear kernel recovers standard covariance and PCA; nonlinear kernels extend this to capture nonlinear relationships without ever computing the transformed features explicitly
