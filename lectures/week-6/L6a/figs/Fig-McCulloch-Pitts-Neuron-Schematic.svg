@@ -1,88 +1,87 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620">
-  <defs>
-    <style>
-      .title { font: 700 30px Helvetica, Arial, sans-serif; fill: #1f2937; }
-      .subtitle { font: 400 17px Helvetica, Arial, sans-serif; fill: #374151; }
-      .label { font: 600 16px Helvetica, Arial, sans-serif; fill: #111827; }
-      .text { font: 400 15px Helvetica, Arial, sans-serif; fill: #111827; }
-      .small { font: 400 13px Helvetica, Arial, sans-serif; fill: #4b5563; }
-      .panel { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.4; rx: 14; }
-      .node { fill: #e0f2fe; stroke: #0284c7; stroke-width: 1.6; }
-      .block { fill: #ffffff; stroke: #94a3b8; stroke-width: 1.8; rx: 12; }
-      .act { fill: #fff7ed; stroke: #ea580c; stroke-width: 1.8; rx: 12; }
-      .out { fill: #dcfce7; stroke: #16a34a; stroke-width: 2.0; }
-      .legacy { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.2; rx: 10; }
-    </style>
-    <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
-      <polygon points="0,0 10,4 0,8" fill="#475569" />
-    </marker>
-  </defs>
-
-  <rect x="16" y="16" width="1168" height="588" rx="16" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.6" />
-
-  <text x="50" y="64" class="title">McCulloch-Pitts Neuron (1943): Simple Binary Update Rule</text>
-  <text x="50" y="92" class="subtitle">State update: n_k(t+1) = sigma(sum_j w_kj n_j(t) - theta_k)</text>
-
-  <rect x="44" y="120" width="1112" height="315" class="panel" />
-
-  <circle cx="130" cy="180" r="30" class="node" />
-  <circle cx="130" cy="245" r="30" class="node" />
-  <circle cx="130" cy="310" r="30" class="node" />
-  <circle cx="130" cy="375" r="30" class="node" />
-
-  <text x="95" y="185" class="text">n1(t)</text>
-  <text x="95" y="250" class="text">n2(t)</text>
-  <text x="118" y="315" class="text">...</text>
-  <text x="95" y="380" class="text">nm(t)</text>
-  <text x="64" y="420" class="small">each input in {0,1}</text>
-
-  <line x1="160" y1="180" x2="330" y2="205" stroke="#475569" stroke-width="1.8" marker-end="url(#arrow)" />
-  <line x1="160" y1="245" x2="330" y2="245" stroke="#475569" stroke-width="1.8" marker-end="url(#arrow)" />
-  <line x1="160" y1="310" x2="330" y2="285" stroke="#475569" stroke-width="1.8" marker-end="url(#arrow)" />
-  <line x1="160" y1="375" x2="330" y2="325" stroke="#475569" stroke-width="1.8" marker-end="url(#arrow)" />
-
-  <text x="208" y="182" class="small">w_k1</text>
-  <text x="208" y="239" class="small">w_k2</text>
-  <text x="208" y="330" class="small">w_km</text>
-
-  <rect x="330" y="170" width="330" height="190" class="block" />
-  <text x="445" y="200" class="label">Net input</text>
-  <text x="360" y="245" class="text">u_k(t) = sum_{j=1}^m w_kj * n_j(t)</text>
-  <text x="360" y="285" class="text">x_k(t) = u_k(t) - theta_k</text>
-  <text x="360" y="324" class="small">weights (w_kj) and threshold (theta_k) are parameters</text>
-
-  <line x1="660" y1="265" x2="740" y2="265" stroke="#475569" stroke-width="2.0" marker-end="url(#arrow)" />
-
-  <rect x="740" y="170" width="260" height="190" class="act" />
-  <text x="817" y="200" class="label">Step activation</text>
-  <text x="770" y="245" class="text">sigma(x) = 1, if x &gt;= 0</text>
-  <text x="770" y="285" class="text">sigma(x) = 0, if x &lt; 0</text>
-  <text x="770" y="324" class="small">"fires" when net input reaches threshold</text>
-
-  <line x1="1000" y1="265" x2="1060" y2="265" stroke="#475569" stroke-width="2.0" marker-end="url(#arrow)" />
-  <circle cx="1105" cy="265" r="55" class="out" />
-  <text x="1068" y="260" class="label">n_k</text>
-  <text x="1073" y="280" class="text">(t+1)</text>
-  <text x="1080" y="303" class="small">in {0,1}</text>
-
-  <text x="44" y="472" class="subtitle">Why this matters: many simple binary neurons can build complex networks</text>
-
-  <rect x="48" y="496" width="210" height="70" class="legacy" />
-  <rect x="304" y="496" width="182" height="70" class="legacy" />
-  <rect x="530" y="496" width="182" height="70" class="legacy" />
-  <rect x="756" y="496" width="196" height="70" class="legacy" />
-
-  <text x="75" y="525" class="text">McCulloch-Pitts</text>
-  <text x="80" y="546" class="small">Neuron (1943)</text>
-  <text x="338" y="525" class="text">Perceptron</text>
-  <text x="333" y="546" class="small">Rosenblatt (1957)</text>
-  <text x="564" y="525" class="text">Hopfield</text>
-  <text x="548" y="546" class="small">Networks</text>
-  <text x="787" y="525" class="text">Boltzmann</text>
-  <text x="782" y="546" class="small">Machines</text>
-
-  <line x1="258" y1="531" x2="304" y2="531" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrow)" />
-  <line x1="486" y1="531" x2="530" y2="531" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrow)" />
-  <line x1="712" y1="531" x2="756" y2="531" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrow)" />
+<svg width="658px" height="429px" viewBox="0 0 658 429" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Frame</title>
+    <defs>
+        <path d="M0,0 L658,0 L658,429 L0,429 L0,0 Z" id="path-1"></path>
+    </defs>
+    <g id="Frame" stroke="none" fill="none" xlink:href="#path-1">
+        <use fill="#FFFFFF" fill-rule="evenodd" xlink:href="#path-1"></use>
+        <ellipse id="Oval" stroke="#979797" stroke-width="1" cx="97.5217391" cy="67" rx="12.0217391" ry="11.5"></ellipse>
+        <ellipse id="Oval" stroke="#979797" stroke-width="1" cx="97.5217391" cy="373" rx="12.0217391" ry="11.5"></ellipse>
+        <ellipse id="Oval" stroke="#979797" stroke-width="1" cx="97.5217391" cy="235" rx="12.0217391" ry="11.5"></ellipse>
+        <ellipse id="Oval" stroke="#979797" stroke-width="1" fill="#D8D8D8" fill-rule="evenodd" cx="371.521739" cy="193" rx="12.0217391" ry="11.5"></ellipse>
+        <ellipse id="Oval" stroke="#000000" stroke-width="1" fill="#000000" fill-rule="evenodd" cx="371.521739" cy="193" rx="12.0217391" ry="11.5"></ellipse>
+        <ellipse id="Oval" stroke="#979797" stroke-width="1" cx="97.5217391" cy="193" rx="12.0217391" ry="11.5"></ellipse>
+        <ellipse id="Oval" stroke="#979797" stroke-width="1" cx="478.521739" cy="193" rx="12.0217391" ry="11.5"></ellipse>
+        <ellipse id="Oval" stroke="#979797" stroke-width="1" cx="97.5217391" cy="151" rx="12.0217391" ry="11.5"></ellipse>
+        <ellipse id="Oval" stroke="#979797" stroke-width="1" cx="97.5217391" cy="109" rx="12.0217391" ry="11.5"></ellipse>
+        <text id="1" font-family="Helvetica" font-size="18" font-weight="normal" fill="#000000">
+            <tspan x="59" y="72">1</tspan>
+        </text>
+        <text id="2" font-family="Helvetica" font-size="18" font-weight="normal" fill="#000000">
+            <tspan x="59" y="117">2</tspan>
+        </text>
+        <text id="3" font-family="Helvetica" font-size="18" font-weight="normal" fill="#000000">
+            <tspan x="59" y="159">3</tspan>
+        </text>
+        <text id="4" font-family="Helvetica" font-size="18" font-weight="normal" fill="#000000">
+            <tspan x="59" y="201">4</tspan>
+        </text>
+        <text id="5" font-family="Helvetica" font-size="18" font-weight="normal" fill="#000000">
+            <tspan x="59" y="243">5</tspan>
+        </text>
+        <text id="m" font-family="Helvetica" font-size="18" font-weight="normal" fill="#000000">
+            <tspan x="55" y="381">m</tspan>
+        </text>
+        <line x1="109.5" y1="67.5" x2="359.5" y2="193.5" id="Line" stroke="#979797" stroke-width="1" stroke-linecap="square"></line>
+        <line x1="109" y1="109" x2="359.5" y2="193.5" id="Line" stroke="#979797" stroke-width="1" stroke-linecap="square"></line>
+        <line x1="110.5" y1="151.5" x2="359.5" y2="193.5" id="Line" stroke="#979797" stroke-width="1" stroke-linecap="square"></line>
+        <line x1="111" y1="193" x2="359.5" y2="192.5" id="Line" stroke="#979797" stroke-width="1" stroke-linecap="square"></line>
+        <line x1="109.5" y1="235" x2="359.5" y2="194.5" id="Line" stroke="#979797" stroke-width="1" stroke-linecap="square"></line>
+        <line x1="108" y1="369" x2="359.5" y2="192.5" id="Line" stroke="#979797" stroke-width="1" stroke-linecap="square"></line>
+        <text id="binary-neurons" font-family="Helvetica" font-size="18" font-weight="normal" fill="#000000">
+            <tspan x="35" y="33">binary neurons</tspan>
+        </text>
+        <text id="neuron-k" font-family="Helvetica" font-size="18" font-weight="normal" fill="#000000">
+            <tspan x="443" y="167">neuron k</tspan>
+        </text>
+        <text id="state@time-t" font-family="Helvetica" font-size="18" font-weight="normal" fill="#000000">
+            <tspan x="47" y="417">state@time t</tspan>
+        </text>
+        <text id="state@time-(t-+-1)" font-family="Helvetica" font-size="18" font-weight="normal" fill="#000000">
+            <tspan x="503" y="200">state@time (t + 1)</tspan>
+        </text>
+        <text id="activation" font-family="Helvetica" font-size="18" font-weight="normal" fill="#000000">
+            <tspan x="333" y="241">activation</tspan>
+        </text>
+        <text id="bias" font-family="Helvetica" font-size="14" font-weight="normal" fill="#000000">
+            <tspan x="359" y="135">bias</tspan>
+        </text>
+        <line x1="371.5" y1="138.5" x2="371.5" y2="180.5" id="Line-2" stroke="#979797" stroke-width="1" stroke-linecap="square"></line>
+        <text id="w1" font-family="Helvetica" font-size="14" font-weight="normal" fill="#000000">
+            <tspan x="171" y="79">w</tspan>
+            <tspan x="181.110352" y="79">1</tspan>
+        </text>
+        <text id="w2" font-family="Helvetica" font-size="14" font-weight="normal" fill="#000000">
+            <tspan x="171" y="120">w</tspan>
+            <tspan x="181.110352" y="120">2</tspan>
+        </text>
+        <text id="w3" font-family="Helvetica" font-size="14" font-weight="normal" fill="#000000">
+            <tspan x="171" y="153">w</tspan>
+            <tspan x="181.110352" y="153">3</tspan>
+        </text>
+        <text id="w4" font-family="Helvetica" font-size="14" font-weight="normal" fill="#000000">
+            <tspan x="171" y="181">w</tspan>
+            <tspan x="181.110352" y="181">4</tspan>
+        </text>
+        <text id="w5" font-family="Helvetica" font-size="14" font-weight="normal" fill="#000000">
+            <tspan x="171" y="212">w</tspan>
+            <tspan x="181.110352" y="212">5</tspan>
+        </text>
+        <text id="wm" font-family="Helvetica" font-size="14" font-weight="normal" fill="#000000">
+            <tspan x="171" y="295">w</tspan>
+            <tspan x="181.110352" y="295">m</tspan>
+        </text>
+        <path id="Line-3" d="M442.427344,184.804697 L443.29537,185.301216 L455.246499,192.13737 L456.789657,193.020069 L455.233959,193.880475 L443.18571,200.543972 L442.31063,201.027951 L441.342673,199.277791 L442.217753,198.793812 L452.71,192.99 L442.302332,187.037268 L441.434306,186.540749 L442.427344,184.804697 Z M443.505667,191.924475 L444.505641,191.931669 L449.505512,191.96764 L450.505486,191.974834 L450.491098,193.974782 L449.491124,193.967588 L444.491253,193.931618 L443.491279,193.924424 L443.505667,191.924475 Z M433.505926,191.852535 L434.5059,191.859729 L439.505771,191.895699 L440.505745,191.902893 L440.491357,193.902841 L439.491383,193.895647 L434.491512,193.859677 L433.491538,193.852483 L433.505926,191.852535 Z M423.506185,191.780594 L424.506159,191.787788 L429.50603,191.823759 L430.506004,191.830953 L430.491616,193.830901 L429.491641,193.823707 L424.491771,193.787736 L423.491797,193.780542 L423.506185,191.780594 Z M413.506444,191.708654 L414.506418,191.715848 L419.506288,191.751818 L420.506262,191.759012 L420.491874,193.75896 L419.4919,193.751766 L414.49203,193.715796 L413.492055,193.708602 L413.506444,191.708654 Z M403.506702,191.636713 L404.506677,191.643907 L409.506547,191.679877 L410.506521,191.687071 L410.492133,193.68702 L409.492159,193.679826 L404.492288,193.643855 L403.492314,193.636661 L403.506702,191.636713 Z M393.506961,191.564772 L394.506935,191.571966 L399.506806,191.607937 L400.50678,191.615131 L400.492392,193.615079 L399.492418,193.607885 L394.492547,193.571915 L393.492573,193.564721 L393.506961,191.564772 Z M383.50722,191.492832 L384.507194,191.500026 L389.507065,191.535996 L390.507039,191.54319 L390.492651,193.543138 L389.492677,193.535944 L384.492806,193.499974 L383.492832,193.49278 L383.50722,191.492832 Z" fill="#000000" fill-rule="nonzero"></path>
+    </g>
 </svg>
