@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620">
+  <defs>
+    <style>
+      .title { font: 700 30px Helvetica, Arial, sans-serif; fill: #1f2937; }
+      .subtitle { font: 400 17px Helvetica, Arial, sans-serif; fill: #374151; }
+      .label { font: 600 16px Helvetica, Arial, sans-serif; fill: #111827; }
+      .text { font: 400 15px Helvetica, Arial, sans-serif; fill: #111827; }
+      .small { font: 400 13px Helvetica, Arial, sans-serif; fill: #4b5563; }
+      .panel { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.4; rx: 14; }
+      .node { fill: #e0f2fe; stroke: #0284c7; stroke-width: 1.6; }
+      .block { fill: #ffffff; stroke: #94a3b8; stroke-width: 1.8; rx: 12; }
+      .act { fill: #fff7ed; stroke: #ea580c; stroke-width: 1.8; rx: 12; }
+      .out { fill: #dcfce7; stroke: #16a34a; stroke-width: 2.0; }
+      .legacy { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.2; rx: 10; }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <polygon points="0,0 10,4 0,8" fill="#475569" />
+    </marker>
+  </defs>
+
+  <rect x="16" y="16" width="1168" height="588" rx="16" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.6" />
+
+  <text x="50" y="64" class="title">McCulloch-Pitts Neuron (1943): Simple Binary Update Rule</text>
+  <text x="50" y="92" class="subtitle">State update: n_k(t+1) = sigma(sum_j w_kj n_j(t) - theta_k)</text>
+
+  <rect x="44" y="120" width="1112" height="315" class="panel" />
+
+  <circle cx="130" cy="180" r="30" class="node" />
+  <circle cx="130" cy="245" r="30" class="node" />
+  <circle cx="130" cy="310" r="30" class="node" />
+  <circle cx="130" cy="375" r="30" class="node" />
+
+  <text x="95" y="185" class="text">n1(t)</text>
+  <text x="95" y="250" class="text">n2(t)</text>
+  <text x="118" y="315" class="text">...</text>
+  <text x="95" y="380" class="text">nm(t)</text>
+  <text x="64" y="420" class="small">each input in {0,1}</text>
+
+  <line x1="160" y1="180" x2="330" y2="205" stroke="#475569" stroke-width="1.8" marker-end="url(#arrow)" />
+  <line x1="160" y1="245" x2="330" y2="245" stroke="#475569" stroke-width="1.8" marker-end="url(#arrow)" />
+  <line x1="160" y1="310" x2="330" y2="285" stroke="#475569" stroke-width="1.8" marker-end="url(#arrow)" />
+  <line x1="160" y1="375" x2="330" y2="325" stroke="#475569" stroke-width="1.8" marker-end="url(#arrow)" />
+
+  <text x="208" y="182" class="small">w_k1</text>
+  <text x="208" y="239" class="small">w_k2</text>
+  <text x="208" y="330" class="small">w_km</text>
+
+  <rect x="330" y="170" width="330" height="190" class="block" />
+  <text x="445" y="200" class="label">Net input</text>
+  <text x="360" y="245" class="text">u_k(t) = sum_{j=1}^m w_kj * n_j(t)</text>
+  <text x="360" y="285" class="text">x_k(t) = u_k(t) - theta_k</text>
+  <text x="360" y="324" class="small">weights (w_kj) and threshold (theta_k) are parameters</text>
+
+  <line x1="660" y1="265" x2="740" y2="265" stroke="#475569" stroke-width="2.0" marker-end="url(#arrow)" />
+
+  <rect x="740" y="170" width="260" height="190" class="act" />
+  <text x="817" y="200" class="label">Step activation</text>
+  <text x="770" y="245" class="text">sigma(x) = 1, if x &gt;= 0</text>
+  <text x="770" y="285" class="text">sigma(x) = 0, if x &lt; 0</text>
+  <text x="770" y="324" class="small">"fires" when net input reaches threshold</text>
+
+  <line x1="1000" y1="265" x2="1060" y2="265" stroke="#475569" stroke-width="2.0" marker-end="url(#arrow)" />
+  <circle cx="1105" cy="265" r="55" class="out" />
+  <text x="1068" y="260" class="label">n_k</text>
+  <text x="1073" y="280" class="text">(t+1)</text>
+  <text x="1080" y="303" class="small">in {0,1}</text>
+
+  <text x="44" y="472" class="subtitle">Why this matters: many simple binary neurons can build complex networks</text>
+
+  <rect x="48" y="496" width="210" height="70" class="legacy" />
+  <rect x="304" y="496" width="182" height="70" class="legacy" />
+  <rect x="530" y="496" width="182" height="70" class="legacy" />
+  <rect x="756" y="496" width="196" height="70" class="legacy" />
+
+  <text x="75" y="525" class="text">McCulloch-Pitts</text>
+  <text x="80" y="546" class="small">Neuron (1943)</text>
+  <text x="338" y="525" class="text">Perceptron</text>
+  <text x="333" y="546" class="small">Rosenblatt (1957)</text>
+  <text x="564" y="525" class="text">Hopfield</text>
+  <text x="548" y="546" class="small">Networks</text>
+  <text x="787" y="525" class="text">Boltzmann</text>
+  <text x="782" y="546" class="small">Machines</text>
+
+  <line x1="258" y1="531" x2="304" y2="531" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrow)" />
+  <line x1="486" y1="531" x2="530" y2="531" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrow)" />
+  <line x1="712" y1="531" x2="756" y2="531" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrow)" />
+</svg>
