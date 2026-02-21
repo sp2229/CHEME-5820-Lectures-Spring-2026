@@ -26,3 +26,9 @@ using Colors
 using Distances
 using DataStructures
 using Test
+using Random
+using LinearAlgebra
+using Printf
+
+# include source files -
+include(joinpath(_PATH_TO_SRC, "Proof.jl"));
