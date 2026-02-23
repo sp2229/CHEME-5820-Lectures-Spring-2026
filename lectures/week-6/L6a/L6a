@@ -1,0 +1,43 @@
+#=
+
+Classical Hopflied Networks 
+
+Theoretical Storage Limit K(max) = 0.138 * (#  Neurons in the Network)
+
+Hard limit that we can store --> rest is forgotten 
+
+Memories encoded as the minima of an energy function 
+
+Need to make procedure to connect the energy of an event and connect it to a memory by walking along a line 
+
+    Physics view of energy minimum btranslaters to the placement of memory in a stable and "low" energy state 
+
+What happens if we have  more than 2 memories, becomes very hard to map a partial memory 
+
+Each memory has a local min 
+- Need to supply random state vector s to recover closest memory encoded in the network 
+- E(s) = - 0.5 SUM(w(ij)s(i)s(j)) - SUM(b(i)s(i))
+    - b(i) is the bias term that is usually zero but can be used to control activation threshhold
+- First, define local field h(i)
+    store current state in s(old)
+    chose a random neuron (i) and compute local field h = SUM(w(ij)s(i) + b(i))
+    update s(i)' with sign h(s(i)) 
+    update network state s <-- s' (only if neuron i changes)
+
+    check for convergence
+        - if hamming distance is 0 between all consecutive pairs 
+        - if current state matches a stored memory pattern (hammind distance is 0)
+    
+
+    Hamming distance H[a,b] = SUM(Indicator(a is not equal to b))
+    if H = 0, states are identical 
+
+    =#
+
+
+Example - Classical Hopfield Network 
+
+Chose --> Float 32 becase it has a practical balance between precision, memory usage, and computational speed.
+
+Why does this work --> guaranteed to converge to something, not necessarily the correct image 
+    - 
