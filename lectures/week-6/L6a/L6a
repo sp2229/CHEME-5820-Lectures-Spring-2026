@@ -40,4 +40,11 @@ Example - Classical Hopfield Network
 Chose --> Float 32 becase it has a practical balance between precision, memory usage, and computational speed.
 
 Why does this work --> guaranteed to converge to something, not necessarily the correct image 
-    - 
+
+
+modern hopfield network is a preliminary version of transformers 
+
+
+another limnitation is that it can only take binary 
+
+needs 
