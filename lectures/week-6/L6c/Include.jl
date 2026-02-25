@@ -29,3 +29,6 @@ using Test
 using Random
 using LinearAlgebra
 using Printf
+
+# set the random seed for reproducibility
+Random.seed!(1234);
