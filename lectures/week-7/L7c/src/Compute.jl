@@ -1,7 +1,8 @@
 """
     learn(model::MySimpleBoltzmannMachineModel, X::Matrix{Int};
           η::Float64 = 0.01, β::Float64 = 1.0,
-          T::Int = 10000, N_epochs::Int = 100) -> Tuple{MySimpleBoltzmannMachineModel, Vector{Float64}}
+          T::Int = 10000, N_epochs::Int = 100,
+          λ::Float64 = 0.0) -> Tuple{MySimpleBoltzmannMachineModel, Vector{Float64}}
 
 Train a Boltzmann machine using exact gradient ascent.
 
@@ -16,6 +17,8 @@ biases by gradient ascent on the log-likelihood.
 - `β::Float64`: inverse temperature used for Gibbs sampling (default: 1.0).
 - `T::Int`: number of Gibbs steps per epoch (default: 10000).
 - `N_epochs::Int`: number of training epochs (default: 100).
+- `λ::Float64`: L2 weight decay coefficient (default: 0.0). A positive value penalizes large
+  weights and prevents the model distribution from collapsing to a single configuration.
 
 ### Returns
 - `model::MySimpleBoltzmannMachineModel`: updated model with trained weights and biases.
@@ -23,7 +26,8 @@ biases by gradient ascent on the log-likelihood.
 """
 function learn(model::MySimpleBoltzmannMachineModel, X::Matrix{Int};
                η::Float64 = 0.01, β::Float64 = 1.0,
-               T::Int = 10000, N_epochs::Int = 100)::Tuple{MySimpleBoltzmannMachineModel, Vector{Float64}}
+               T::Int = 10000, N_epochs::Int = 100,
+               λ::Float64 = 0.0)::Tuple{MySimpleBoltzmannMachineModel, Vector{Float64}}
 
     # initialize -
     n = size(X, 1);           # number of nodes
@@ -51,8 +55,8 @@ function learn(model::MySimpleBoltzmannMachineModel, X::Matrix{Int};
         C_model = (1/m_stat) * (S_stat * S_stat');
         b_model = vec(mean(S_stat, dims=2));
 
-        # compute updates -
-        ΔW = η * (C_data - C_model);
+        # compute updates (with optional L2 weight decay) -
+        ΔW = η * (C_data - C_model) - λ .* model.W;
         Δb = η * (b_data - b_model);
 
         # symmetrize and zero the diagonal of ΔW -
