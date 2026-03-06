@@ -6,7 +6,8 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(pdflatex:*)",
       "Bash(kpsewhich:*)",
-      "Bash(sips:*)"
+      "Bash(sips:*)",
+      "Bash(jupyter nbconvert:*)"
     ]
   }
 }
