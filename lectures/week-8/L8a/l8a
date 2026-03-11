@@ -1,0 +1,21 @@
+
+#= 
+
+To find the local min, use gradient descent, 
+
+Langevin Dynamics use gradient descent to take sample at current time and uses eta as step size for the ;earning rate 
+    - uses an attention mechanism with parameter eta and update related to the attention
+    - gaussian noise 
+    - as eta --> 0, the number of steps grows and iterates converge in distribution of probability 
+
+Stochastic attention Update has 3 terms contraction, attention (softmax part), and noise terms 
+- need to normalize the s 
+- each image is on a row --> each memory has 784 elements 
+
+show that this model will act like "modern" hopfield and retrieve IF you have the right beta 
+- get back a blurry photo, not the exact same thing like a modern hopfield 
+- generates something similar based on what it thinks u gave it 
+
+ENERGY TRANSFORMER REPLACES ST. TRANSFORMER WITH ENERGY METHODS MAKING EACH LAYER AN ENERGY DESCENT STEP 
+--> CLASSIC TRANSFORMERS HAVE BETTER ENERGY PERFORMANCE 
+--> HIGHEST RANKED 
