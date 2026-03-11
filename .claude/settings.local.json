@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh api:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(pdflatex:*)",
+      "Bash(kpsewhich:*)",
+      "Bash(sips:*)",
+      "Bash(jupyter nbconvert:*)"
+    ]
+  }
+}
