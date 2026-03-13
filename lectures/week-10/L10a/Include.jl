@@ -26,6 +26,4 @@ using StatsBase
 using IJulia
 
 # load source files -
-include(joinpath(_PATH_TO_SRC, "CBOW.jl"));
-include(joinpath(_PATH_TO_SRC, "SkipGram.jl"));
-include(joinpath(_PATH_TO_SRC, "NegativeSampling.jl"));
+include(joinpath(_PATH_TO_SRC, "GloVe.jl"));
