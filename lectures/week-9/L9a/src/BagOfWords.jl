@@ -1,65 +1,74 @@
 """
-    build_bow_matrix(sentences::Array{String,1}, vocabulary::Dict{String, Int64}) -> Array{Int64, 2}
+    build_bow_matrix(sentences, vocabulary) -> Array{Int64,2}
 
-Build a Bag of Words matrix from a corpus of sentences and a vocabulary.
-Each row corresponds to a sentence and each column corresponds to a word in the vocabulary.
-Sentences are augmented with `<bos>` and `<eos>` tokens, converted to lowercase, and split by whitespace.
-Words not in the vocabulary are mapped to the `<unk>` token.
+Build a bag-of-words count matrix from a corpus.
+
+Each row corresponds to a sentence and each column to a vocabulary token.
+Entry `[i, j]` is the count of token `j` in sentence `i`. Each sentence is
+lowercased, split on whitespace, and wrapped with `<bos>` and `<eos>` tokens
+before counting. Unknown tokens are mapped to `<unk>` if present in `vocabulary`.
 
 ### Arguments
-- `sentences::Array{String,1}`: array of sentence strings.
-- `vocabulary::Dict{String, Int64}`: dictionary mapping words to vocabulary indices.
+- `sentences::Array{String,1}`: raw sentences.
+- `vocabulary::Dict{String,Int64}`: mapping from token to 1-based vocabulary index.
 
 ### Returns
-- `Array{Int64, 2}`: matrix of shape `(num_sentences, vocab_size)` with word counts.
+- `::Array{Int64,2}`: count matrix of size `num_sentences × vocab_size`.
 """
-function build_bow_matrix(sentences::Array{String,1}, vocabulary::Dict{String, Int64})::Array{Int64, 2}
+function build_bow_matrix(sentences::Array{String,1}, vocabulary::Dict{String,Int64})::Array{Int64,2}
 
     # initialize -
     num_sentences = length(sentences);
     vocab_size = length(vocabulary);
     bow_matrix = zeros(Int64, num_sentences, vocab_size);
 
-    # populate the Bag of Words matrix -
+    # main loop: count tokens in each sentence -
     for (i, sentence) in enumerate(sentences)
-        augmented_sentence = "<bos> " * sentence * " <eos>";
-        words = split(lowercase(augmented_sentence)) .|> String;
-        for word in words
-            if haskey(vocabulary, word)
-                index = vocabulary[word];
-                bow_matrix[i, index] += 1;
-            else
-                unk_index = vocabulary["<unk>"];
-                bow_matrix[i, unk_index] += 1;
+
+        # tokenize, lowercase, and add boundary tokens -
+        words = split(lowercase(sentence));
+        augmented = ["<bos>"; words; "<eos>"];
+
+        # accumulate counts -
+        for word in augmented
+            idx = get(vocabulary, word, get(vocabulary, "<unk>", 0));
+            if idx > 0
+                bow_matrix[i, idx] += 1;
             end
         end
     end
 
+    # return -
     return bow_matrix;
 end
 
 """
-    hashing_vectorizer(features::Array{String,1}; length::Int64 = 10) -> Array{Int64, 1}
+    hashing_vectorizer(features; length=10) -> Array{Int64,1}
 
-Convert a list of features (words) into a fixed-length vector using the hashing trick.
-Each feature is mapped to an index using Julia's built-in `hash` function, and the count at that index is incremented.
+Map a list of string features to a fixed-length count vector using the hashing trick.
+
+Each feature string is hashed and mapped to an index in `[1, length]` via `mod1(abs(hash(f)), length)`.
+The value at each index is the number of features that hash to that index.
+Collisions (multiple features mapping to the same index) are summed.
 
 ### Arguments
-- `features::Array{String,1}`: array of feature strings (e.g., words from a sentence).
-- `length::Int64`: desired length of the output vector (default: 10).
+- `features::Array{String,1}`: list of feature strings to vectorize.
+- `length::Int64`: output vector length (default: 10).
 
 ### Returns
-- `Array{Int64, 1}`: vector of length `length` with hashed feature counts.
+- `::Array{Int64,1}`: count vector of size `length`.
 """
-function hashing_vectorizer(features::Array{String,1}; length::Int64 = 10)::Array{Int64,1}
+function hashing_vectorizer(features::Array{String,1}; length::Int64=10)::Array{Int64,1}
 
     # initialize -
-    new_hash_vector = zeros(Int, length);
-    for i ∈ eachindex(features)
-        feature = features[i];
-        j = hash(feature) |> h -> mod1(h, length);
-        new_hash_vector[j] += 1;
+    v = zeros(Int64, length);
+
+    # hash each feature and accumulate counts -
+    for f in features
+        idx = mod1(abs(hash(f)), length);
+        v[idx] += 1;
     end
 
-    return new_hash_vector;
+    # return -
+    return v;
 end

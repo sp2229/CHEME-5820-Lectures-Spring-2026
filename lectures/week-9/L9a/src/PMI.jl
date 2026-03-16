@@ -1,88 +1,110 @@
 """
-    build_cooccurrence_matrix(sentences::Array{String,1}, vocabulary::Dict{String, Int64};
-        window_size::Int64 = 2) -> Array{Int64, 2}
+    build_cooccurrence_matrix(sentences, vocabulary; window_size=2) -> Array{Int64,2}
 
-Build a word-context co-occurrence matrix from a corpus. For each word in each sentence,
-counts how many times each other word appears within `window_size` positions on either side.
+Build a symmetric word co-occurrence count matrix from a corpus.
+
+For each word at position `i` in a sentence, all words within `window_size`
+positions on either side contribute one count to entry `[w_idx, ctx_idx]`.
+The matrix has size `vocab_size × vocab_size`. Unknown tokens are mapped to
+`<unk>` if present in `vocabulary` and ignored otherwise.
 
 ### Arguments
-- `sentences::Array{String,1}`: array of sentence strings.
-- `vocabulary::Dict{String, Int64}`: dictionary mapping words to vocabulary indices.
-- `window_size::Int64`: number of tokens on each side to consider as context (default: 2).
+- `sentences::Array{String,1}`: raw sentences; each sentence is lowercased and split on whitespace.
+- `vocabulary::Dict{String,Int64}`: mapping from token to 1-based vocabulary index.
+- `window_size::Int64`: half-width of the context window (default: 2).
 
 ### Returns
-- `Array{Int64, 2}`: co-occurrence matrix of shape `(vocab_size, vocab_size)`.
+- `::Array{Int64,2}`: symmetric co-occurrence count matrix of size `vocab_size × vocab_size`.
 """
-function build_cooccurrence_matrix(sentences::Array{String,1}, vocabulary::Dict{String, Int64};
-    window_size::Int64 = 2)::Array{Int64, 2}
+function build_cooccurrence_matrix(sentences::Array{String,1}, vocabulary::Dict{String,Int64}; window_size::Int64=2)::Array{Int64,2}
 
     # initialize -
     vocab_size = length(vocabulary);
-    cooccurrence_matrix = zeros(Int64, vocab_size, vocab_size);
+    cooccurrence = zeros(Int64, vocab_size, vocab_size);
 
-    # populate the co-occurrence matrix -
+    # main loop: iterate over sentences -
     for sentence in sentences
-        augmented_sentence = "<bos> " * sentence * " <eos>";
-        words = split(lowercase(augmented_sentence)) .|> String;
-        word_indices = [get(vocabulary, word, vocabulary["<unk>"]) for word in words];
 
-        for i ∈ eachindex(word_indices)
-            target_index = word_indices[i];
-            left = max(1, i - window_size);
-            right = min(length(word_indices), i + window_size);
-            for j ∈ left:right
+        # tokenize and lowercase -
+        words = split(lowercase(sentence));
+
+        for (i, word) in enumerate(words)
+
+            # look up the target word index; skip if unknown -
+            w_idx = get(vocabulary, word, get(vocabulary, "<unk>", 0));
+            if w_idx == 0
+                continue
+            end
+
+            # define the context window bounds -
+            lo = max(1, i - window_size);
+            hi = min(length(words), i + window_size);
+
+            # accumulate co-occurrence counts within the window -
+            for j in lo:hi
                 if j == i
                     continue
                 end
-                context_index = word_indices[j];
-                cooccurrence_matrix[target_index, context_index] += 1;
+                ctx = get(vocabulary, words[j], get(vocabulary, "<unk>", 0));
+                if ctx > 0
+                    cooccurrence[w_idx, ctx] += 1;
+                end
             end
         end
     end
 
-    return cooccurrence_matrix;
+    # return -
+    return cooccurrence;
 end
 
 """
-    build_pmi_matrices(cooccurrence_matrix::Array{Int64, 2}) -> Tuple{Array{Float64, 2}, Array{Float64, 2}}
+    build_pmi_matrices(cooccurrence_matrix) -> Tuple{Array{Float64,2}, Array{Float64,2}}
 
-Compute Pointwise Mutual Information (PMI) and Positive PMI (PPMI) matrices from a co-occurrence matrix.
-PMI values are computed as `log2(P(w,c) / (P(w) * P(c)))`. Entries where any probability is zero are set to `-Inf`.
-PPMI replaces negative PMI values with zero.
+Compute the Pointwise Mutual Information (PMI) and Positive PMI (PPMI) matrices
+from a co-occurrence count matrix.
+
+PMI is defined as `log2(P(w, c) / (P(w) * P(c)))`, where joint and marginal
+probabilities are estimated from `cooccurrence_matrix`. Entries with zero joint
+count are set to `-Inf`. PPMI clamps negative PMI values to zero. Both output
+matrices have the same size as the input (`vocab_size × vocab_size`).
+Returns `(zeros, zeros)` matrices if the total co-occurrence count is zero.
 
 ### Arguments
-- `cooccurrence_matrix::Array{Int64, 2}`: co-occurrence matrix of shape `(vocab_size, vocab_size)`.
+- `cooccurrence_matrix::Array{Int64,2}`: symmetric count matrix from `build_cooccurrence_matrix`.
 
 ### Returns
-- `Tuple{Array{Float64, 2}, Array{Float64, 2}}`: tuple of (PMI matrix, PPMI matrix), each of shape `(vocab_size, vocab_size)`.
+- `pmi_matrix::Array{Float64,2}`: PMI matrix of size `vocab_size × vocab_size`.
+- `ppmi_matrix::Array{Float64,2}`: PPMI matrix of size `vocab_size × vocab_size`.
 """
-function build_pmi_matrices(cooccurrence_matrix::Array{Int64, 2})::Tuple{Array{Float64, 2}, Array{Float64, 2}}
+function build_pmi_matrices(cooccurrence_matrix::Array{Int64,2})
 
     # initialize -
     vocab_size = size(cooccurrence_matrix, 1);
-    total_pairs = sum(cooccurrence_matrix);
+    total = sum(cooccurrence_matrix);
 
-    # compute probabilities -
-    P_wc = cooccurrence_matrix / total_pairs;
-    P_w = vec(sum(P_wc, dims=2));
-    P_c = vec(sum(P_wc, dims=1));
+    # guard against empty matrix -
+    if total == 0
+        return zeros(Float64, vocab_size, vocab_size), zeros(Float64, vocab_size, vocab_size)
+    end
 
-    # compute PMI -
-    PMI_matrix = fill(-Inf, vocab_size, vocab_size);
+    # estimate joint and marginal probabilities -
+    joint_prob = cooccurrence_matrix ./ total;
+    marginal_w = sum(joint_prob, dims=2);
+    marginal_c = sum(joint_prob, dims=1);
+
+    # compute PMI for each (word, context) pair -
+    pmi_matrix = fill(-Inf, vocab_size, vocab_size);
     for i in 1:vocab_size
         for j in 1:vocab_size
-            p_wc = P_wc[i, j];
-            p_w = P_w[i];
-            p_c = P_c[j];
-            if p_wc == 0 || p_w == 0 || p_c == 0
-                continue
+            if joint_prob[i,j] > 0 && marginal_w[i] > 0 && marginal_c[j] > 0
+                pmi_matrix[i,j] = log2(joint_prob[i,j] / (marginal_w[i] * marginal_c[j]));
             end
-            PMI_matrix[i, j] = log2(p_wc / (p_w * p_c));
         end
     end
 
-    # compute PPMI -
-    PPMI_matrix = max.(PMI_matrix, 0.0);
+    # compute PPMI by clamping negative values to zero -
+    ppmi_matrix = max.(pmi_matrix, 0.0);
 
-    return (PMI_matrix, PPMI_matrix);
+    # return -
+    return pmi_matrix, ppmi_matrix;
 end

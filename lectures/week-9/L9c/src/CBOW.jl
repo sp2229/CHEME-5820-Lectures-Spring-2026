@@ -3,7 +3,7 @@
         window_size::Int64 = 2) -> Array{Tuple{Vector{Float64}, Vector{Float64}}, 1}
 
 Generate CBOW training pairs from a corpus. For each word position in each sentence,
-the context is the sum of one-hot vectors of surrounding words within the window,
+the context is the average of one-hot vectors of surrounding words within the window,
 and the target is the one-hot vector of the center word.
 
 ### Arguments
@@ -42,7 +42,8 @@ function build_cbow_pairs(sentences::Array{String,1}, vocabulary::Dict{String, I
                 context_vector[word_indices[j]] += 1.0;
             end
 
-            push!(pairs, (context_vector, target_onehot));
+            count = sum(context_vector);
+            push!(pairs, (count > 0 ? context_vector ./ count : context_vector, target_onehot));
         end
     end
 
