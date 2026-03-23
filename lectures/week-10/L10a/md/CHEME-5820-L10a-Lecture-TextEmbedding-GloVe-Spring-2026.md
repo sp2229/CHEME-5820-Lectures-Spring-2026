@@ -38,11 +38,17 @@ GloVe starts from a word-word co-occurrence matrix constructed over the entire c
 
 > __Definition (Co-occurrence count and probability)__
 >
-> Let $X_{ij}$ denote the number of times word $j$ appears in the context window of word $i$. Optionally, each context occurrence is weighted by the inverse of its distance from the center word, so closer words contribute more. The row sum $X_{i} = \sum_{k} X_{ik}$ is the total context count for word $i$. The conditional co-occurrence probability is:
+> Let $X_{ij}$ denote the number of times word $j$ appears in the context window of word $i$. Optionally, each context occurrence is weighted by the inverse of its distance from the center word, so closer words contribute more. The row sum $X_{i} = \sum_{k\in\mathcal{V}} X_{ik}$ is the total context count for word $i$. The conditional co-occurrence probability is:
 > $$
 > P_{ij} = \frac{X_{ij}}{X_{i}}
 > $$
 > which estimates the probability that word $j$ appears in the context of word $i$.
+
+The matrix $P_{ij}$ has a familiar structure: each row sums to 1, so it is a row-stochastic matrix — the same structure as a transition matrix in a Markov chain.
+
+> __Remark (Connection to Markov chains)__
+>
+> The co-occurrence probability $P_{ij}$ defines a random walk over the vocabulary. From word $i$, the walker moves to word $j$ with probability $P_{ij} = X_{ij}/X_i$. Frequent words act as high-degree hub states that the walk visits often, which is why GloVe needs the weighting function $f(X_{ij})$ to prevent these hubs from dominating training. This Markov perspective makes the probe-word ratio $P_{ik}/P_{jk}$ easier to interpret: it compares the one-step transition probability to probe word $k$ from two different starting states $i$ and $j$.
 
 The key insight of GloVe is that raw probabilities are less informative than their ratios. To see why, consider a probe-word analysis.
 
@@ -50,7 +56,7 @@ The key insight of GloVe is that raw probabilities are less informative than the
 >
 > Given two target words $i$ and $j$ and a probe word $k$, the ratio of co-occurrence probabilities can be expanded in terms of raw counts:
 > $$
-> \frac{P_{ik}}{P_{jk}} = \frac{X_{ik}\,/\,X_{i}}{X_{jk}\,/\,X_{j}} = \frac{X_{ik}}{X_{jk}}\cdot\frac{X_{j}}{X_{i}}
+> \frac{P_{ik}}{P_{jk}} = \frac{X_{ik}\,/\,X_{i}}{X_{jk}\,/\,X_{j}} = \frac{X_{ik}}{X_{jk}}\cdot\left(\frac{X_{j}}{X_{i}}\right)
 > $$
 > The first factor $X_{ik}/X_{jk}$ compares the raw co-occurrence counts of probe word $k$ with each target. The second factor $X_{j}/X_{i}$ normalizes for differences in overall frequency between the two target words. This ratio reveals three cases:
 >
@@ -108,11 +114,16 @@ The weighting function prevents both rare and extremely common co-occurrences fr
 
 At convergence, the model satisfies $\mathbf{w}_{i}^{\top}\tilde{\mathbf{w}}_{j} + b_{i} + \tilde{b}_{j} \approx \log X_{ij}$, encoding co-occurrence statistics in vector geometry. Because the objective directly targets log counts, GloVe makes the matrix factorization that SGNS performs implicitly into an explicit optimization problem.
 
+> __Remark (Connection to PMI)__
+>
+> The log co-occurrence count decomposes as $\log X_{ij} = \text{PMI}(i,j) + \log X_{i} + \log X_{j} - \log X$, where $\text{PMI}(i,j) = \log\!\left(P_{ij}\,X / X_{j}\right)$ is the pointwise mutual information from L9a and $X = \sum_{k\in\mathcal{V}}X_{k}$ is the total count. In the GloVe model, the biases $b_{i}$ and $\tilde{b}_{j}$ absorb the marginal terms $\log X_{i}$ and $\log X_{j} - \log X$, so the dot product $\mathbf{w}_{i}^{\top}\tilde{\mathbf{w}}_{j}$ learns something close to $\text{PMI}(i,j)$. This connects the three methods we have studied: PMI (L9a) builds the matrix explicitly, Skip-Gram (L9c) factorizes a shifted PMI matrix implicitly, and GloVe (L10a) factorizes the log co-occurrence matrix explicitly with biases that separate the PMI signal from the marginals.
+
 ### Choosing the Embedding Dimension
 The embedding dimension $d$ controls the capacity of the model. Each word requires $2d$ parameters (word vector + context vector, plus biases), and the dot product $\mathbf{w}_{i}^{\top}\tilde{\mathbf{w}}_{j}$ must approximate $\log X_{ij} - b_{i} - \tilde{b}_{j}$ using only $d$ dimensions. Choosing $d$ involves a trade-off:
 
 > __Selecting the embedding dimension__
 >
+> A common heuristic is the fourth-root rule: $d \approx N_{\mathcal{V}}^{1/4}$, which reflects the observation that embedding capacity should scale sublinearly with vocabulary size. [Yin and Shen (2018)](https://papers.nips.cc/paper/2018/hash/b534ba68236ba543ae44b22bd110a1d6-Abstract.html) provide theoretical support for this scaling by analyzing the bias-variance trade-off in embedding quality as a function of $d$. However, this is a starting point, not a final answer. The optimal $d$ depends on the corpus size, vocabulary size, and downstream task. In general:
 > * __Too small__: the model lacks capacity to represent the co-occurrence structure. Many word pairs will have large residuals $e_{ij}$ because $d$ dimensions cannot capture the variation in $\log X_{ij}$.
 > * __Too large__: the model has more parameters than the co-occurrence data can constrain. On small corpora, large $d$ leads to overfitting — the vectors fit noise in $X_{ij}$ rather than semantic structure.
 > * __Diminishing returns__: performance on word analogy and similarity benchmarks improves steeply with $d$ up to around $200$, then plateaus. The original GloVe paper reports results at $d\in\{50, 100, 200, 300\}$.
@@ -194,6 +205,7 @@ ___
 Sources for this lecture:
 * [Pennington, J., Socher, R., & Manning, C. D. (2014). GloVe: Global Vectors for Word Representation. In *Proceedings of the 2014 Conference on Empirical Methods in Natural Language Processing (EMNLP)* (pp. 1532-1543).](https://nlp.stanford.edu/pubs/glove.pdf)
 * [Levy, O., & Goldberg, Y. (2014). Neural Word Embedding as Implicit Matrix Factorization. NeurIPS 2014.](https://papers.nips.cc/paper/2014/hash/feab05aa91085b7a8012516bc3533958-Abstract.html)
+* [Yin, Z., & Shen, Y. (2018). On the Dimensionality of Word Embedding. NeurIPS 2018.](https://papers.nips.cc/paper/2018/hash/b534ba68236ba543ae44b22bd110a1d6-Abstract.html)
 * [Jurafsky, D., & Martin, J. H. (2024). Speech and Language Processing, Chapter 6: Vector Semantics and Embeddings.](https://web.stanford.edu/~jurafsky/slp3/)
 
 ___
