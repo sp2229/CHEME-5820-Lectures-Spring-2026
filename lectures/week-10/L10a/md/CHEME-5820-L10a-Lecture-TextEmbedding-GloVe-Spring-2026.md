@@ -58,11 +58,11 @@ The key insight of GloVe is that raw probabilities are less informative than the
 > $$
 > \frac{P_{ik}}{P_{jk}} = \frac{X_{ik}\,/\,X_{i}}{X_{jk}\,/\,X_{j}} = \frac{X_{ik}}{X_{jk}}\cdot\left(\frac{X_{j}}{X_{i}}\right)
 > $$
-> The first factor $X_{ik}/X_{jk}$ compares the raw co-occurrence counts of probe word $k$ with each target. The second factor $X_{j}/X_{i}$ normalizes for differences in overall frequency between the two target words. This ratio reveals three cases:
+> The first factor $X_{ik}/X_{jk}$ (relative association) compares how often probe word $k$ co-occurs with each target: if $X_{ik} \gg X_{jk}$, then $k$ is more strongly associated with word $i$. The second factor $X_{j}/X_{i}$ (frequency correction) corrects for differences in overall frequency between the two target words. Together, the ratio reveals three cases:
 >
-> * __Large ratio__ ($P_{ik}/P_{jk} \gg 1$): the count $X_{ik}$ is much larger than $X_{jk}$ (after normalization). Probe word $k$ co-occurs frequently with word $i$ but rarely with word $j$.
-> * __Small ratio__ ($P_{ik}/P_{jk} \ll 1$): the count $X_{jk}$ dominates $X_{ik}$. Probe word $k$ co-occurs frequently with word $j$ but rarely with word $i$.
-> * __Ratio near 1__ ($P_{ik}/P_{jk} \approx 1$): the counts $X_{ik}$ and $X_{jk}$ are similar (after normalization). Either $k$ co-occurs with both targets equally, or $k$ co-occurs with neither (both counts are small).
+> * __Large ratio__ ($P_{ik}/P_{jk} \gg 1$): word $k$ co-occurs much more with $i$ than with $j$ (after frequency correction). Probe word $k$ is associated with word $i$ but not word $j$.
+> * __Small ratio__ ($P_{ik}/P_{jk} \ll 1$): word $k$ co-occurs much more with $j$ than with $i$. Probe word $k$ is associated with word $j$ but not word $i$.
+> * __Ratio near 1__ ($P_{ik}/P_{jk} \approx 1$): word $k$ co-occurs with both targets equally (after frequency correction), or co-occurs with neither.
 
 For example, let $i = \text{ice}$ and $j = \text{steam}$:
 
@@ -76,7 +76,7 @@ The next step is to design an objective function that forces word vectors to rep
 ___
 
 ## The GloVe Objective
-GloVe learns two $d$-dimensional vectors per word: a word vector $\mathbf{w}_{i}\in\mathbb{R}^{d}$ (used when word $i$ is the center word) and a context vector $\tilde{\mathbf{w}}_{j}\in\mathbb{R}^{d}$ (used when word $j$ appears as context). The model fits these vectors, along with scalar bias terms $b_{i},\tilde{b}_{j}\in\mathbb{R}$, by minimizing a weighted least-squares objective over all observed co-occurrence pairs.
+GloVe learns two $d$-dimensional vectors per word: a word vector $\mathbf{w}_{i}\in\mathbb{R}^{d}$ for the row word $i$ and a context vector $\tilde{\mathbf{w}}_{j}\in\mathbb{R}^{d}$ for the column word $j$ in the co-occurrence matrix. The model fits these vectors, along with scalar bias terms $b_{i},\tilde{b}_{j}\in\mathbb{R}$, by minimizing a weighted least-squares objective over all observed co-occurrence pairs.
 
 > __Definition (GloVe objective)__
 >
@@ -116,7 +116,11 @@ At convergence, the model satisfies $\mathbf{w}_{i}^{\top}\tilde{\mathbf{w}}_{j}
 
 > __Remark (Connection to PMI)__
 >
-> The log co-occurrence count decomposes as $\log X_{ij} = \text{PMI}(i,j) + \log X_{i} + \log X_{j} - \log X$, where $\text{PMI}(i,j) = \log\!\left(P_{ij}\,X / X_{j}\right)$ is the pointwise mutual information from L9a and $X = \sum_{k\in\mathcal{V}}X_{k}$ is the total count. In the GloVe model, the biases $b_{i}$ and $\tilde{b}_{j}$ absorb the marginal terms $\log X_{i}$ and $\log X_{j} - \log X$, so the dot product $\mathbf{w}_{i}^{\top}\tilde{\mathbf{w}}_{j}$ learns something close to $\text{PMI}(i,j)$. This connects the three methods we have studied: PMI (L9a) builds the matrix explicitly, Skip-Gram (L9c) factorizes a shifted PMI matrix implicitly, and GloVe (L10a) factorizes the log co-occurrence matrix explicitly with biases that separate the PMI signal from the marginals.
+> The log co-occurrence count can be decomposed as:
+> $$
+> \log X_{ij} = \text{PMI}(i,j) + \underbrace{\log X_{i} + \log X_{j} - \log X}_{\text{word-frequency terms}}
+> $$
+> where $X_{i}$ and $X_{j}$ are the row sums defined above (total context counts for words $i$ and $j$), and $X = \sum_{i\in\mathcal{V}} X_i$ is the grand total across the entire vocabulary. The word-frequency terms depend only on how often each word appears overall, not on whether $i$ and $j$ are semantically related. The biases $b_{i}$ and $\tilde{b}_{j}$ absorb these terms, leaving the dot product $\mathbf{w}_{i}^{\top}\tilde{\mathbf{w}}_{j}$ to learn something close to $\text{PMI}(i,j)$. This connects our three methods: PMI (L9a) builds the matrix explicitly, Skip-Gram (L9c) factorizes a shifted PMI matrix implicitly, and GloVe factorizes $\log X_{ij}$ explicitly with biases that separate the PMI signal from the word-frequency terms.
 
 ### Choosing the Embedding Dimension
 The embedding dimension $d$ controls the capacity of the model. Each word requires $2d$ parameters (word vector + context vector, plus biases), and the dot product $\mathbf{w}_{i}^{\top}\tilde{\mathbf{w}}_{j}$ must approximate $\log X_{ij} - b_{i} - \tilde{b}_{j}$ using only $d$ dimensions. Choosing $d$ involves a trade-off:
