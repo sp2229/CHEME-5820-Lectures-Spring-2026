@@ -58,7 +58,7 @@ The matrix $P_{ij}$ has a familiar structure: each row sums to 1, so it is a row
 
 > __Remark (Connection to Markov chains)__
 >
-> The co-occurrence probability $P_{ij}$ has the same mathematical structure as a Markov transition matrix: it is row-stochastic, with $P_{ij}$ giving the probability of "moving" from word $i$ to word $j$. However, a transition here does not mean $j$ is the next word in the sentence. It means $j$ appeared somewhere within the context window of $i$, regardless of position or direction. With this caveat, the Markov perspective makes the probe-word ratio $P_{ik}/P_{jk}$ easier to interpret: it compares the transition probability to probe word $k$ from two different starting words $i$ and $j$. Frequent words act as high-degree hub states in this graph, which is why GloVe needs the weighting function $f(X_{ij})$ to prevent them from dominating training.
+> The co-occurrence probability $P_{ij}$ has the same mathematical structure as a Markov transition matrix: it is row-stochastic, with $P_{ij}$ giving the probability of "moving" from word $i$ to word $j$. However, a transition here does not mean $j$ is the next word in the sentence. It means $j$ appeared somewhere within the context window of $i$, regardless of position or direction. 
 
 The key insight of GloVe is that raw probabilities are less informative than their ratios. To see why, consider a probe-word analysis.
 
@@ -73,6 +73,8 @@ The key insight of GloVe is that raw probabilities are less informative than the
 > * __Large ratio__ ($P_{ik}/P_{jk} \gg 1$): word $k$ co-occurs much more with $i$ than with $j$ (after frequency correction). Probe word $k$ is associated with word $i$ but not word $j$.
 > * __Small ratio__ ($P_{ik}/P_{jk} \ll 1$): word $k$ co-occurs much more with $j$ than with $i$. Probe word $k$ is associated with word $j$ but not word $i$.
 > * __Ratio near 1__ ($P_{ik}/P_{jk} \approx 1$): word $k$ co-occurs with both targets equally (after frequency correction), or co-occurs with neither.
+> 
+> The Markov perspective makes the probe-word ratio $P_{ik}/P_{jk}$ easier to interpret: it compares the transition probability to probe word $k$ from two different starting words $i$ and $j$. 
 
 For example, let $i = \text{ice}$ and $j = \text{steam}$:
 
@@ -122,7 +124,7 @@ The weighting function prevents both rare and extremely common co-occurrences fr
 > $$
 > with $x_{\max} = 100$ and $\alpha = 3/4$. Pairs with $X_{ij} \geq x_{\max}$ receive weight 1. Pairs with smaller counts receive reduced weight, suppressing noise from rare co-occurrences. For example, a count of 50 yields $f(50) = (50/100)^{3/4} \approx 0.59$, while a count of 200 yields $f(200) = 1$.
 
-At convergence, the model satisfies $\mathbf{w}_{i}^{\top}\tilde{\mathbf{w}}_{j} + b_{i} + \tilde{b}_{j} \approx \log X_{ij}$, encoding co-occurrence statistics in vector geometry. Because the objective directly targets log counts, GloVe makes the matrix factorization that SGNS performs implicitly into an explicit optimization problem.
+At convergence, the model satisfies $\mathbf{w}_{i}^{\top}\tilde{\mathbf{w}}_{j} + b_{i} + \tilde{b}_{j} \approx \log X_{ij}$, encoding co-occurrence statistics in vector geometry.
 
 > __Remark (Connection to PMI)__
 >
@@ -130,7 +132,11 @@ At convergence, the model satisfies $\mathbf{w}_{i}^{\top}\tilde{\mathbf{w}}_{j}
 > $$
 > \log X_{ij} = \text{PMI}(i,j) + \underbrace{\log X_{i} + \log X_{j} - \log X}_{\text{word-frequency terms}}
 > $$
-> where $X_{i}$ and $X_{j}$ are the row sums defined above (total context counts for words $i$ and $j$), and $X = \sum_{i\in\mathcal{V}} X_i$ is the grand total across the entire vocabulary. The word-frequency terms depend only on how often each word appears overall, not on whether $i$ and $j$ are semantically related. The biases $b_{i}$ and $\tilde{b}_{j}$ absorb these terms, leaving the dot product $\mathbf{w}_{i}^{\top}\tilde{\mathbf{w}}_{j}$ to learn something close to $\text{PMI}(i,j)$. This connects our three methods: PMI (L9a) builds the matrix explicitly, Skip-Gram (L9c) factorizes a shifted PMI matrix implicitly, and GloVe factorizes $\log X_{ij}$ explicitly with biases that separate the PMI signal from the word-frequency terms.
+> where $X_{i}$ and $X_{j}$ are the row sums defined above (total context counts for words $i$ and $j$), and $X = \sum_{i\in\mathcal{V}} X_i$ is the grand total across the entire vocabulary. 
+> * The word-frequency terms depend only on how often each word appears overall, not on whether $i$ and $j$ are semantically related. 
+> * Because $b_{i}$ depends only on word $i$ and $\tilde{b}_{j}$ depends only on word $j$, they have the right structure to capture the word-frequency terms ($\log X_i$, $\log X_j$, and the constant $\log X$). This frees the dot product $\mathbf{w}_{i}^{\top}\tilde{\mathbf{w}}_{j}$ to learn something close to $\text{PMI}(i,j)$.
+
+This connects our three methods: PMI (L9a) builds the matrix explicitly, Skip-Gram (L9c) factorizes a shifted PMI matrix implicitly, and GloVe factorizes $\log X_{ij}$ explicitly with biases that separate the PMI signal from the word-frequency terms.
 
 ### Choosing the Embedding Dimension
 The embedding dimension $d$ controls the capacity of the model. Each word requires $2d$ parameters (word vector + context vector, plus biases), and the dot product $\mathbf{w}_{i}^{\top}\tilde{\mathbf{w}}_{j}$ must approximate $\log X_{ij} - b_{i} - \tilde{b}_{j}$ using only $d$ dimensions. Choosing $d$ involves a trade-off:
