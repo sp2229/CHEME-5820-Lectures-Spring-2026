@@ -44,11 +44,21 @@ GloVe starts from a word-word co-occurrence matrix constructed over the entire c
 > $$
 > which estimates the probability that word $j$ appears in the context of word $i$.
 
-The matrix $P_{ij}$ has a familiar structure: each row sums to 1, so it is a row-stochastic matrix — the same structure as a transition matrix in a Markov chain.
+The figure below shows how a context window of size $c = 2$ centered on the word "learning" updates the co-occurrence matrix. Each context word increments the corresponding entry $X_{ij}$, optionally weighted by the inverse distance $1/\delta$.
+
+<div>
+  <center>
+    <img src="figs/Fig-GloVe-Context-Window.svg" style="width:85%" />
+  </center>
+</div>
+
+After scanning the entire corpus, the window is no longer needed. GloVe trains only on the aggregated counts in $\mathbf{X}$, not on individual window positions. This is the key difference from Skip-Gram, which processes one window at a time during training.
+
+The matrix $P_{ij}$ has a familiar structure: each row sums to 1, so it is a row-stochastic matrix, the same structure as a transition matrix in a Markov chain.
 
 > __Remark (Connection to Markov chains)__
 >
-> The co-occurrence probability $P_{ij}$ defines a random walk over the vocabulary. From word $i$, the walker moves to word $j$ with probability $P_{ij} = X_{ij}/X_i$. Frequent words act as high-degree hub states that the walk visits often, which is why GloVe needs the weighting function $f(X_{ij})$ to prevent these hubs from dominating training. This Markov perspective makes the probe-word ratio $P_{ik}/P_{jk}$ easier to interpret: it compares the one-step transition probability to probe word $k$ from two different starting states $i$ and $j$.
+> The co-occurrence probability $P_{ij}$ has the same mathematical structure as a Markov transition matrix: it is row-stochastic, with $P_{ij}$ giving the probability of "moving" from word $i$ to word $j$. However, a transition here does not mean $j$ is the next word in the sentence. It means $j$ appeared somewhere within the context window of $i$, regardless of position or direction. With this caveat, the Markov perspective makes the probe-word ratio $P_{ik}/P_{jk}$ easier to interpret: it compares the transition probability to probe word $k$ from two different starting words $i$ and $j$. Frequent words act as high-degree hub states in this graph, which is why GloVe needs the weighting function $f(X_{ij})$ to prevent them from dominating training.
 
 The key insight of GloVe is that raw probabilities are less informative than their ratios. To see why, consider a probe-word analysis.
 
@@ -94,7 +104,7 @@ J = \sum_{i,j:\, X_{ij}>0} f(X_{ij})\left(\underbrace{\mathbf{w}_{i}^{\top}\tild
 ### Interpreting the Objective
 The GloVe objective is a weighted regression problem. The observed data is $\log X_{ij}$, and we are fitting a model $m_{ij} = \mathbf{w}_{i}^{\top}\tilde{\mathbf{w}}_{j} + b_{i} + \tilde{b}_{j}$ to that data. The residual $e_{ij} = m_{ij} - \log X_{ij}$ measures how far the model's prediction is from the observed log count, and the objective minimizes the weighted sum of squared residuals.
 
-In principle, we could replace the bilinear model $m_{ij}$ with any parametric function $m(i, j; \theta)$ — for example, a neural network that takes word indices as input and outputs a scalar prediction. The bilinear dot-product form is chosen for three reasons:
+In principle, we could replace the bilinear model $m_{ij}$ with any parametric function $m(i, j; \theta)$, for example a neural network that takes word indices as input and outputs a scalar prediction. The bilinear dot-product form is chosen for three reasons:
 
 > __Why the bilinear model?__
 >
@@ -129,7 +139,7 @@ The embedding dimension $d$ controls the capacity of the model. Each word requir
 >
 > A common heuristic is the fourth-root rule: $d \approx N_{\mathcal{V}}^{1/4}$, which reflects the observation that embedding capacity should scale sublinearly with vocabulary size. [Yin and Shen (2018)](https://papers.nips.cc/paper/2018/hash/b534ba68236ba543ae44b22bd110a1d6-Abstract.html) provide theoretical support for this scaling by analyzing the bias-variance trade-off in embedding quality as a function of $d$. However, this is a starting point, not a final answer. The optimal $d$ depends on the corpus size, vocabulary size, and downstream task. In general:
 > * __Too small__: the model lacks capacity to represent the co-occurrence structure. Many word pairs will have large residuals $e_{ij}$ because $d$ dimensions cannot capture the variation in $\log X_{ij}$.
-> * __Too large__: the model has more parameters than the co-occurrence data can constrain. On small corpora, large $d$ leads to overfitting — the vectors fit noise in $X_{ij}$ rather than semantic structure.
+> * __Too large__: the model has more parameters than the co-occurrence data can constrain. On small corpora, large $d$ leads to overfitting; the vectors fit noise in $X_{ij}$ rather than semantic structure.
 > * __Diminishing returns__: performance on word analogy and similarity benchmarks improves steeply with $d$ up to around $200$, then plateaus. The original GloVe paper reports results at $d\in\{50, 100, 200, 300\}$.
 >
 > In practice, $d$ is selected by evaluating embeddings on a downstream task (classification, retrieval, analogy) at several candidate values and choosing the $d$ that performs best.
@@ -153,7 +163,9 @@ The GloVe objective is a weighted least-squares problem over all nonzero entries
 > $$
 > where $e_{ij} = \mathbf{w}_{i}^{\top}\tilde{\mathbf{w}}_{j} + b_{i} + \tilde{b}_{j} - \log X_{ij}$ is the residual and $f(X_{ij})$ is the weighting function.
 
-These gradients are used to update the parameters with stochastic gradient descent. The original GloVe paper uses AdaGrad, which accumulates squared gradients to adapt the learning rate for each parameter. Adam is also a common choice. Training iterates over all nonzero pairs $(i,j)$ in shuffled order, updating $\mathbf{w}_{i}$, $\tilde{\mathbf{w}}_{j}$, $b_{i}$, and $\tilde{b}_{j}$ after each pair. For the full gradient derivation and a detailed comparison of AdaGrad and Adam for GloVe, see [▶ Advanced: GloVe Gradient Derivation and AdaGrad Optimization](CHEME-5820-L10a-Advanced-GloVe-AdaGrad-Spring-2026.ipynb).
+These gradients are used to update the parameters with stochastic gradient descent. The original GloVe paper uses AdaGrad, which accumulates squared gradients to adapt the learning rate for each parameter. Adam is also a common choice. 
+
+For the gradient derivation and a discussion of AdaGrad for GloVe, see [▶ Advanced: GloVe Gradient Derivation and AdaGrad Optimization](CHEME-5820-L10a-Advanced-GloVe-AdaGrad-Spring-2026.ipynb).
 
 ### Combining Word and Context Vectors
 Because the GloVe objective is symmetric in the roles of word and context (the co-occurrence matrix can be made symmetric), $\mathbf{w}_{i}$ and $\tilde{\mathbf{w}}_{i}$ are equivalent up to random initialization. The original paper combines them after training:
