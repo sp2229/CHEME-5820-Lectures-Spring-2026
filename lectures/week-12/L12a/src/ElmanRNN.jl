@@ -63,7 +63,7 @@ Compute one time step of the Elman RNN.
 
 ### Returns
 - `Tuple{Vector{Float64}, Vector{Float64}}`: tuple of (y_t, h_t) where `y_t` is the output
-   and `h_t` is the updated hidden state.
+   in `(0, 1)` (sigmoid-activated) and `h_t` is the updated hidden state.
 """
 function forward_step(model::MyElmanRNNModel, x_t::Vector{Float64},
     h_prev::Vector{Float64})::Tuple{Vector{Float64}, Vector{Float64}}
@@ -71,8 +71,11 @@ function forward_step(model::MyElmanRNNModel, x_t::Vector{Float64},
     # hidden state update: h_t = tanh(U * h_{t-1} + W * x_t + bh) -
     h_t = tanh.(model.U * h_prev .+ model.W * x_t .+ model.bh);
 
-    # output: y_t = V * h_t + by (linear for regression) -
-    y_t = model.V * h_t .+ model.by;
+    # output: y_t = sigmoid(V * h_t + by)
+    # sigmoid bounds output to (0, 1), which is necessary because targets are normalized to [0, 1].
+    # a linear output layer is unbounded: during teacher forcing, the model never sees its own
+    # out-of-range predictions, so small errors compound immediately during autoregressive rollout.
+    y_t = NNlib.sigmoid.(model.V * h_t .+ model.by);
 
     return (y_t, h_t)
 end
