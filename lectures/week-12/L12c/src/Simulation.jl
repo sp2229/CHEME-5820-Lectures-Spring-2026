@@ -68,8 +68,13 @@ function generate_cho_dataset(conditions::Vector{Tuple{Float64,Float64,Float64}}
     n_conditions = length(conditions);
     state_arrays = Vector{Matrix{Float64}}(undef, n_conditions);
 
+    # build a common time grid so all conditions have the same number of time points.
+    # the ODE solver with callbacks can return extra points at event times,
+    # so we interpolate each solution onto this fixed grid -
+    time_vector = collect(range(tspan[1], tspan[2], step = saveat));
+    n_timepoints = length(time_vector);
+
     # simulate each condition -
-    local time_vector::Vector{Float64}
     for (j, cond) in enumerate(conditions)
 
         # build parameters for this condition -
@@ -78,16 +83,10 @@ function generate_cho_dataset(conditions::Vector{Tuple{Float64,Float64,Float64}}
         # simulate -
         sol = simulate_fedbatch(p; u0 = copy(u0), tspan = tspan, saveat = saveat);
 
-        # extract time vector from first simulation -
-        if j == 1
-            time_vector = sol.t;
-        end
-
-        # convert solution to (T x 7) matrix -
-        T = length(sol.t);
-        state_matrix = zeros(Float64, T, 7);
-        for i in 1:T
-            state_matrix[i, :] = sol.u[i];
+        # interpolate solution onto the common time grid -
+        state_matrix = zeros(Float64, n_timepoints, 7);
+        for i in 1:n_timepoints
+            state_matrix[i, :] = sol(time_vector[i]);
         end
         state_arrays[j] = state_matrix;
     end
