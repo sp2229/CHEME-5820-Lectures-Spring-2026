@@ -27,13 +27,15 @@ function simulate_fedbatch(p::MyFedBatchCHOParameters;
     prob = ODEProblem(rhs!, u0, tspan, p);
     cbs = build_feed_callbacks(p);
 
-    # solve with explicit Runge-Kutta method -
+    # solve with explicit Runge-Kutta method; reject steps that push any
+    # concentration (states 2–7) below -1e-6 as a numerical safety net -
     sol = solve(prob, Tsit5();
         callback = cbs,
         saveat = saveat,
         abstol = 1e-8,
         reltol = 1e-6,
-        maxiters = 1_000_000
+        maxiters = 1_000_000,
+        isoutofdomain = (u, p, t) -> any(u[i] < -1e-6 for i in 2:7)
     );
 
     return sol;
