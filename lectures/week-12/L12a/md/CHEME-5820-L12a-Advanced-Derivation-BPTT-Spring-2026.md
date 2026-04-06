@@ -12,9 +12,6 @@ This notebook derives the gradient of the loss function with respect to the recu
 Let's get started!
 ___
 
-This notebook provides the mathematical details behind the training challenges discussed in the [L12a lecture on Recurrent Neural Networks](CHEME-5820-L12a-Lecture-RecurrentNetworks-Spring-2026.ipynb). We work through the derivations that support the claims about vanishing and exploding gradients.
-___
-
 ## Task 1: Derive the BPTT Gradient
 We derive the gradient of the loss function with respect to the recurrent weight matrix $\mathbf{U}_h$ in an Elman RNN. This derivation reveals the Jacobian product structure that causes vanishing and exploding gradients.
 
@@ -29,15 +26,13 @@ We derive the gradient of the loss function with respect to the recurrent weight
 > $$
 > where $\mathbf{h}_t \in \mathbb{R}^h$ is the hidden state, $\mathbf{x}_t \in \mathbb{R}^{d_{in}}$ is the input, $\mathbf{y}_t \in \mathbb{R}^{d_{out}}$ is the output, and $\sigma_h$ is the hidden activation function (e.g., tanh). We define the total loss over a sequence of length $T$ as the sum of per-step losses:
 > $$L = \sum_{t=1}^{T} L_t(\mathbf{y}_t, \mathbf{y}_t^*)$$
-> where $\mathbf{y}_t^*$ is the target at time $t$.
-
-We also define the pre-activation at time $t$ as $\mathbf{z}_t = \mathbf{U}_h \mathbf{h}_{t-1} + \mathbf{W}_x \mathbf{x}_t + \mathbf{b}_h$, so that $\mathbf{h}_t = \sigma_h(\mathbf{z}_t)$.
+> where $\mathbf{y}_t^*$ is the target at time $t$. We also define the pre-activation at time $t$ as $\mathbf{z}_t = \mathbf{U}_h \mathbf{h}_{t-1} + \mathbf{W}_x \mathbf{x}_t + \mathbf{b}_h$, so that $\mathbf{h}_t = \sigma_h(\mathbf{z}_t)$.
 
 The recurrent weight matrix $\mathbf{U}_h$ appears in the computation of every hidden state $\mathbf{h}_1, \mathbf{h}_2, \ldots, \mathbf{h}_T$. To compute $\partial L / \partial \mathbf{U}_h$, we must account for the contribution of $\mathbf{U}_h$ at every time step.
 
 > __BPTT gradient via the chain rule__
 >
-> The gradient of the total loss with respect to $\mathbf{U}_h$ is:
+> The gradient of the total loss with respect to $\mathbf{U}_h$ is given by:
 > $$
 \frac{\partial L}{\partial \mathbf{U}_h} = \sum_{t=1}^{T} \frac{\partial L_t}{\partial \mathbf{U}_h}
 > $$
@@ -47,9 +42,7 @@ The recurrent weight matrix $\mathbf{U}_h$ appears in the computation of every h
 > $$
 > where $\partial^+ \mathbf{h}_k / \partial \mathbf{U}_h$ denotes the *immediate* (non-recursive) derivative of $\mathbf{h}_k$ with respect to $\mathbf{U}_h$, holding $\mathbf{h}_{k-1}$ fixed. The term $\partial \mathbf{h}_t / \partial \mathbf{h}_k$ captures the recursive dependency through all intermediate hidden states.
 
-The inner sum over $k$ is the key: it requires computing $\partial \mathbf{h}_t / \partial \mathbf{h}_k$ for every $k \leq t$, which involves a product of Jacobian matrices.
-
-The term $\partial \mathbf{h}_t / \partial \mathbf{h}_k$ measures how a perturbation to the hidden state at time $k$ propagates forward to time $t$.
+The inner sum over $k$ is the key: it requires computing $\partial \mathbf{h}_t / \partial \mathbf{h}_k$ for every $k \leq t$, which involves a product of Jacobian matrices. The term $\partial \mathbf{h}_t / \partial \mathbf{h}_k$ measures how a perturbation to the hidden state at time $k$ propagates forward to time $t$.
 
 > __Jacobian product across time steps__
 >
@@ -64,6 +57,7 @@ The term $\partial \mathbf{h}_t / \partial \mathbf{h}_k$ measures how a perturba
 > where $\sigma_h'(\mathbf{z}_i) \in \mathbb{R}^h$ is the element-wise derivative of the activation function evaluated at the pre-activation $\mathbf{z}_i$, and $\text{diag}(\cdot)$ places this vector on the diagonal of an $h \times h$ matrix.
 
 The gradient from time $t$ back to time $k$ therefore passes through $(t - k)$ matrix multiplications, each involving $\mathbf{U}_h$ scaled by the activation derivative. The behavior of this product determines whether the gradient vanishes, explodes, or remains stable.
+
 ___
 
 ## Task 2: Vanishing and Exploding Gradient Analysis
@@ -148,6 +142,8 @@ This is a fundamentally different structure from the Elman RNN Jacobian product.
 When the forget vector $\mathbf{f}_t$ is close to $\mathbf{1}$ (the network learns to "remember"), the product $\prod_{i=k+1}^{t} \mathbf{f}_i$ stays near $\mathbf{1}$ regardless of the time depth $(t-k)$. The gradient neither vanishes nor explodes. The network can selectively forget (by setting $f_{t,j}$ close to 0 for specific dimensions $j$) or remember (by keeping $f_{t,j}$ close to 1), learning this choice from data.
 
 This additive cell state is the core idea behind Long Short-Term Memory (LSTM) networks, introduced by [Hochreiter and Schmidhuber (1997)](https://doi.org/10.1162/neco.1997.9.8.1735). In an LSTM, the forget vector $\mathbf{f}_t$, the input vector $\mathbf{i}_t$, and an additional output gate $\mathbf{o}_t$ are computed from learned weight matrices applied to the input and previous hidden state. The full LSTM architecture is derived in the [L12c lecture on LSTM Networks](CHEME-5820-L12c-Lecture-LSTM-Spring-2026.ipynb).
+
+
 ___
 
 ## Summary

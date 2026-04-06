@@ -176,7 +176,9 @@ We use [the `percent_nominal_to_molar(...)` function](https://github.com/varnerl
 ### Factor VIII (Amplification)
 We sweep FVIII from 1% (severe Hemophilia A) to 150% (elevated) at a fixed TF concentration of 5 pM.
 
-> __Hemophilia A__ is an X-linked bleeding disorder caused by deficiency of coagulation Factor VIII. It affects approximately 1 in 5,000 male births worldwide. Clinical severity correlates with FVIII activity level: severe (< 1%) patients experience spontaneous joint and muscle bleeds, moderate (1-5%) patients bleed after minor trauma, and mild (5-40%) patients bleed mainly after surgery or major injury. Treatment involves intravenous infusion of recombinant or plasma-derived FVIII concentrates, with prophylactic regimens now standard of care for severe patients. Emicizumab, a bispecific antibody that mimics FVIIIa cofactor function, has emerged as a subcutaneous alternative.
+> __Hemophilia A__ is an X-linked bleeding disorder caused by deficiency of coagulation Factor VIII. It affects approximately 1 in 5,000 male births worldwide. 
+> * Clinical severity correlates with FVIII activity level: severe (< 1%) patients experience spontaneous joint and muscle bleeds, moderate (1-5%) patients bleed after minor trauma, and mild (5-40%) patients bleed mainly after surgery or major injury. 
+> * Treatment involves intravenous infusion of recombinant or plasma-derived FVIII concentrates, with prophylactic regimens now standard of care for severe patients. [Emicizumab](https://www.hemlibra.com/?adobe_mc=MCORGID%3DDF784CF658BD66380A495D3E%2540AdobeOrg%7CTS%3D1775474298&_gl=1*dbvq87*_gadup_aw*R0NMLjE3NzU0NzQyOTguQ2owS0NRandzODNPQmhENEFSSXNBQ2JsajE5M2Jyc1N6aG1VVzZ1STc0d0ttNHU2RHNRMW00OTZyX2RnZGJ1ZWF4ZzBqVHU2cGhGUm0zWWFBcDdYRUFMd193Y0I.*_gadup_dc*R0NMLjE3NzU0NzQyOTguQ2owS0NRandzODNPQmhENEFSSXNBQ2JsajE5M2Jyc1N6aG1VVzZ1STc0d0ttNHU2RHNRMW00OTZyX2RnZGJ1ZWF4ZzBqVHU2cGhGUm0zWWFBcDdYRUFMd193Y0I.*_gadup_ga*ODMyMDY2MDY3LjE3NzU0NzQyOTg.*_gadup_ga_9NC4Z86ZLS*czU5MDY2MDgxMTQzNzQ2NyRvMSRnMCR0MTc3NTQ3NDI5OSRqNTkkbDAkaDA.), a bispecific antibody that mimics FVIIIa cofactor function, has emerged as a subcutaneous alternative.
 
 The thrombin curves are stored in `thrombin_fviii::Matrix{Float64}` (rows = time points, columns = FVIII levels, values in nM).
 
@@ -236,7 +238,9 @@ Severe FVIII deficiency (1%) produces minimal thrombin because the intrinsic ten
 ### Antithrombin (Termination)
 We sweep antithrombin from 50% (deficient, thrombophilia risk) to 150% (elevated) at 5 pM TF.
 
-> __Antithrombin deficiency__ is an autosomal dominant thrombophilia with a prevalence of approximately 1 in 2,000 to 5,000 in the general population, but it accounts for 1-2% of patients presenting with venous thromboembolism (VTE). Heterozygous AT deficiency (50-70% of normal) carries a 5-to-50-fold increased lifetime risk of VTE compared to the general population. Homozygous type I deficiency is incompatible with life. Management includes therapeutic anticoagulation (heparin, which requires AT as a cofactor, or direct oral anticoagulants) and AT concentrate infusion for acute events or surgical prophylaxis.
+> __Antithrombin deficiency__ is an inherited clotting disorder carried on a non-sex chromosome (autosomal), where one defective copy of the antithrombin gene is enough to cause problems (dominant). It occurs in approximately 1 in 2,000 to 5,000 people, and accounts for 1-2% of patients presenting with [venous thromboembolism](https://en.wikipedia.org/wiki/Venous_thromboembolism) (VTE). 
+> * Having one defective copy (heterozygous, 50-70% of normal AT) carries a 5-to-50-fold increased lifetime risk of VTE compared to the general population. 
+> * Having both copies defective (homozygous) is incompatible with life. Management includes therapeutic anticoagulation (heparin, which requires AT as a cofactor, or direct oral anticoagulants) and AT concentrate infusion for acute events or surgical prophylaxis.
 
 The thrombin curves are stored in `thrombin_at::Matrix{Float64}` (nM).
 
@@ -296,7 +300,11 @@ Low antithrombin produces higher and more sustained thrombin because FXa and thr
 ### Factor V (Prothrombinase)
 We sweep FV from 1% (severe deficiency) to 150% (elevated) at 5 pM TF.
 
-> __Factor V deficiency__ (parahemophilia) is a rare autosomal recessive bleeding disorder with a prevalence of approximately 1 in 1,000,000. Severe deficiency (< 1%) causes mucocutaneous bleeding, epistaxis, and post-surgical hemorrhage. In contrast, __Factor V Leiden__ (a point mutation that makes FVa resistant to inactivation by activated protein C) is the most common inherited thrombophilia, present in approximately 5% of Caucasian populations. FV Leiden heterozygotes have a 3-to-8-fold increased risk of venous thromboembolism. Treatment of FV deficiency relies on fresh frozen plasma (no FV concentrate is commercially available), while FV Leiden management focuses on anticoagulation during high-risk periods.
+> __Factor V deficiency__ (parahemophilia) is a rare autosomal recessive bleeding disorder with a prevalence of approximately 1 in 1,000,000. Severe deficiency (< 1%) causes mucocutaneous bleeding, epistaxis, and post-surgical hemorrhage. 
+> 
+> In contrast, __Factor V Leiden__ (a point mutation that makes FVa resistant to inactivation by activated protein C) is the most common inherited thrombophilia, present in approximately 5% of Caucasian populations. 
+> 
+> * FV Leiden heterozygotes have a 3-to-8-fold increased risk of venous thromboembolism. Treatment of FV deficiency relies on fresh frozen plasma (no FV concentrate is commercially available), while FV Leiden management focuses on anticoagulation during high-risk periods.
 
 The thrombin curves are stored in `thrombin_fv::Matrix{Float64}` (nM).
 

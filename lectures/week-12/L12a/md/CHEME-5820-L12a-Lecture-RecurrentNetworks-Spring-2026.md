@@ -32,9 +32,13 @@ To model a sequence, i.e., predict the next token given past tokens, we can use 
 
 > __Why not HMMs?__
 >
-> Hidden Markov Models (HMMs) use the [Markov property](https://en.wikipedia.org/wiki/Markov_property), which says that the future state of a system depends only on its current state and not on its past states. This assumption is restrictive for applications where relationships between sequence elements require different modeling approaches.
+> Hidden Markov Models (HMMs) use the [Markov property](https://en.wikipedia.org/wiki/Markov_property), which says that the future state of a system depends only on its current state and not on its past states. Because HMM hidden states are __discrete and finite__ (one of $K$ states), once the model transitions, all information about the past is lost. 
+>
+> __TLDR__: The current state in an HMM carries no memory of how it was reached, limiting the ability to capture long-range dependencies.
 
-This is where RNNs come in. RNNs are designed to handle data sequences by maintaining a hidden state that captures information about previous inputs. This allows them to model long-range dependencies and contextual relationships between elements in the sequence.
+This is where RNNs come in. RNNs also have Markovian hidden state dynamics, i.e., $\mathbf{h}_t$ depends only on $\mathbf{h}_{t-1}$ and $\mathbf{x}_t$. However, the hidden state $\mathbf{h}_t\in\mathbb{R}^{h}$ is a __continuous vector__, not a discrete label. Because each hidden state is computed from the previous one, $\mathbf{h}_t$ encodes a compressed representation of the entire input history. 
+
+This gives RNNs far greater capacity to carry historical information through the Markov bottleneck, enabling them to capture long-range dependencies that HMMs cannot.
 
 <div>
     <center>
@@ -64,7 +68,7 @@ __At each time step__: an Elman RNN takes an _input_ and the previous hidden sta
 
 > __Elman RNN Architecture__
 >
-> The following equations can describe the Elman RNN:
+> The following equations describe the Elman RNN:
 > $$
 \boxed{
 \begin{align*}
@@ -73,15 +77,15 @@ __At each time step__: an Elman RNN takes an _input_ and the previous hidden sta
 \end{align*}}
 > $$
 > where the parameters are:
-> * __Network weights__: the term $\mathbf{U}_h\in\mathbb{R}^{h\times{h}}$ is the weight matrix for the hidden state, $\mathbf{W}_x\in\mathbb{R}^{h\times{d_{in}}}$ is the weight matrix for the input, and $\mathbf{W}_y\in\mathbb{R}^{d_{out}\times{h}}$ is the weight matrix for the output
+> * __Network weights__: the term $\mathbf{U}_h\in\mathbb{R}^{h\times{h}}$ denotes the weight matrix for the hidden state, $\mathbf{W}_x\in\mathbb{R}^{h\times{d_{in}}}$ denotes the weight matrix for the input, and $\mathbf{W}_y\in\mathbb{R}^{d_{out}\times{h}}$ is the weight matrix for the output
 > * __Network bias__: the $\mathbf{b}_h\in\mathbb{R}^{h}$ terms denote the bias vector for the hidden state, and $\mathbf{b}_y\in\mathbb{R}^{d_{out}}$ is the bias vector for the output.
-> * __Activation function__: the $\sigma_{h}$ function is a _hidden layer activation function_, such as the sigmoid or hyperbolic tangent (tanh) function, which introduces non-linearity into the RNN. The activation function $\sigma_{y}$ is an _output activation function_ that can be a softmax function for classification tasks or a linear function for regression tasks.
+> * __Activation function__: the $\sigma_{h}$ function is a _hidden layer activation function_, such as the sigmoid or hyperbolic tangent (tanh) function, which introduces non-linearity into the RNN. The activation function $\sigma_{y}$ is an _output activation function_ that can be a softmax function for classification tasks or a linear function for regression tasks, or also a non-linear function depending on the problem at hand.
 
 How many parameters are there in the Elman network? 
 
 > __Parameter Count Elman RNN__
 >
-> The number of parameters in an Elman RNN can be calculated as follows:
+> The number of parameters in an Elman RNN can be calculated as $N_{total} = N_{hidden} + N_{output}$, where:
 > * _Hidden state_: The number of parameters for the hidden state is $N_{hidden} = h^2 + d_{in}h + h = h(h + d_{in} + 1)$
 > * _Output_: The number of parameters for the output is $N_{output} = d_{out}h + d_{out} = d_{out}(h + 1)$
 > 
@@ -105,9 +109,10 @@ Then the parameter count is:
 * Output parameters: $N_{output} = 1(64 + 1) = 65$
 * **Total: $N_{total} = 4480 + 65 = 4545$ parameters**
 
-Compare this to a feedforward network with one hidden layer of the same dimensions: such a network would have $5 \times 64 + 64 + 64 \times 1 + 1 = 449$ parameters.
+Compare this to a feedforward network with one hidden layer of the same dimensions. Recall from [L8c](../../week-8/L8c/CHEME-5820-L8c-Lecture-FeedForwardNetworks-Spring-2026.ipynb) that an FNN with $L$ layers has $\sum_{i=1}^{L} m_{i}(m_{i-1}+1)$ parameters. For a single hidden layer with dimensions $5 \to 64 \to 1$, this gives $64(5+1) + 1(64+1) = 384 + 65 = 449$ parameters.
 
-The RNN has more parameters due to the recurrent weight matrix $\mathbf{U}_h$ (contributing $64^2 = 4096$ parameters), but crucially, these weights are **reused across all time steps** rather than expanded with sequence length. This weight sharing is what makes RNNs computationally efficient for variable-length sequences. The $h^2$ term dominates the parameter count when the hidden dimension is large, so doubling $h$ roughly quadruples the number of parameters. Doubling the input dimension $d_{in}$ only doubles the $d_{in}h$ term, a more modest increase.
+The RNN has more parameters due to the recurrent weight matrix $\mathbf{U}_h$ (contributing $64^2 = 4096$ parameters), but crucially, these weights are **reused across all time steps** rather than expanded with sequence length. This weight sharing is what makes RNNs computationally efficient for variable-length sequences. 
+* __TLDR__: The $h^2$ term dominates the parameter count when the hidden dimension is large, so doubling $h$ roughly quadruples the number of parameters. However, doubling the input dimension $d_{in}$ only doubles the $d_{in}h$ term, a more modest increase.
 
 ___
 
@@ -116,8 +121,6 @@ The Jordan network is another RNN type related to the Elman network but with a d
 * [Jordan, Michael I. (1997-01-01). "Serial Order: A Parallel Distributed Processing Approach". Neural-Network Models of Cognition ,  Biobehavioral Foundations. Advances in Psychology. Vol. 121. pp. 471-495. doi:10.1016/s0166-4115(97)80111-2. ISBN 978-0-444-81931-4. S2CID 15375627.](https://www.sciencedirect.com/science/article/pii/S0166411597801112?via%3Dihub)
 
 __Key architectural difference__: While Elman networks feed the previous hidden state directly into the hidden layer computation, Jordan networks maintain a separate state vector $\mathbf{s}_t$ that is updated based on the previous state and previous _output_ rather than previous hidden state. This means Jordan networks rely on output history rather than hidden state history, offering interpretability but requiring longer sequences to capture long-range dependencies.
-
-__At each time step__: a Jordan RNN takes an _input_, the previous hidden state (memory), and the previous output and computes the output entry at time $t$. Thus, the Jordan network has the same structure as the Elman network but updates the hidden state differently (i.e., the output layer is connected back to the hidden layer).
 
 Let the input vector at time $t$ be denoted as $\mathbf{x}_t\in\mathbb{R}^{d_{in}}$, the hidden state at time $t$ as $\mathbf{h}_t\in\mathbb{R}^{h}$, and the state vector at time $t$ as $\mathbf{s}_t\in\mathbb{R}^{s}$.
 
@@ -165,16 +168,15 @@ The training process for RNNs is similar to that of feedforward neural networks 
 >
 > * __What is BPTT?__ Backpropagation through time (BPTT) is a variant of the backpropagation algorithm that trains recurrent neural networks (RNNs). It involves _unrolling_ the RNN across time steps, treating it as a feedforward network, and then applying the standard backpropagation algorithm to compute gradients and update weights. BPTT allows RNNs to learn from data sequences by capturing temporal dependencies and adjusting weights based on the entire sequence.
 >
-> * __The chain rule and gradient flow__: The key challenge in BPTT is that the recurrent weight matrix $\mathbf{U}_h$ appears in the computation of all hidden states. To compute gradients with respect to $\mathbf{U}_h$, we must backpropagate through products of Jacobians across time steps. When the eigenvalues satisfy $|\lambda| < 1$ (absolute value less than 1), these products decay exponentially with time depth, causing gradients to shrink. Specifically, gradients from distant time steps get multiplied by factors like $\lambda^t$, which approach zero exponentially as $t$ increases. Conversely, when $|\lambda| > 1$, these factors grow exponentially, destabilizing training.
-> * __Issues__: However, BPTT is prone to the __vanishing gradients problem__, where gradients shrink exponentially during backpropagation (when eigenvalues $|\lambda| < 1$), hindering the learning of long-term dependencies, and the __exploding gradients problem__, where unchecked gradient growth destabilizes training (when $|\lambda| > 1$). 
+> * __The chain rule and gradient flow__: The key challenge in BPTT is that the recurrent weight matrix $\mathbf{U}_h$ appears in the computation of all hidden states. To compute gradients with respect to $\mathbf{U}_h$, we must backpropagate through products of Jacobians across time steps. When the eigenvalues satisfy $|\lambda| < 1$, these products decay exponentially with time depth, causing gradients to shrink toward zero. This is the __vanishing gradients problem__, which hinders learning of long-term dependencies. Conversely, when $|\lambda| > 1$, these factors grow exponentially, destabilizing training. This is the __exploding gradients problem__.
 >
-> For a step-by-step derivation of the BPTT gradient and the vanishing gradient conditions, see the [Advanced BPTT Derivation notebook](CHEME-5820-L12a-Advanced-Derivation-BPTT-Spring-2026.ipynb). In addition, see [Chapter 10 of Goodfellow et al.](http://www.deeplearningbook.org/). 
+> For a step-by-step derivation of the BPTT gradient and the vanishing (exploding) gradient conditions, see the [Advanced BPTT Derivation notebook](CHEME-5820-L12a-Advanced-Derivation-BPTT-Spring-2026.ipynb). In addition, see [Chapter 10 of Goodfellow](http://www.deeplearningbook.org/).
 
-Let's look at an example of a RNN in action on a time series prediction task, namely, the predictiomn of Thormbin activation. 
+Let's look at an example of a RNN in action on a time series prediction task, namely, the prediction of Thrombin activation. 
 
 > __Example: RNNs for Time Series Prediction__
 >
-> * [▶ Tissue Factor-Initiated Coagulation Model](CHEME-5820-L12a-Advanced-Coagulation-Simulation-Spring-2026.ipynb). In this notebook, we explore the Hockin-Mann coagulation model that generates the training data for the Elman RNN. We simulate thrombin gene`ration at different tissue factor concentrations and coagulation factor levels.
+> * [▶ Tissue Factor-Initiated Coagulation Model](CHEME-5820-L12a-Advanced-Coagulation-Simulation-Spring-2026.ipynb). In this notebook, we explore the Hockin-Mann coagulation model that generates the training data for the Elman RNN. We simulate thrombin generation at different tissue factor concentrations and coagulation factor levels.
 >
 > * [▶ Recurrent Neural Networks for Time Series Prediction](CHEME-5820-L12a-Example-RNN-TimeSeries-Spring-2026.ipynb). In this example, we apply Elman RNNs to forecast time series data. We observe how the hidden state captures temporal dependencies, compare predictions from different RNN architectures, and evaluate model performance on sequential data.
 
