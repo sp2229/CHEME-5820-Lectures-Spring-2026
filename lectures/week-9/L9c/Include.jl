@@ -13,16 +13,10 @@ end
 
 # using statements -
 using VLDataScienceMachineLearningPackage
-using Images
-using ImageInTerminal
-using FileIO
-using ImageIO
-using OneHotArrays
 using Statistics
 using JLD2
 using LinearAlgebra
 using Plots
-using Colors
 using Distances
 using NNlib
 using Distributions
@@ -32,7 +26,6 @@ using StatsBase
 using IJulia
 
 # load source files -
-include(joinpath(_PATH_TO_SRC, "BagOfWords.jl"));
-include(joinpath(_PATH_TO_SRC, "TFIDF.jl"));
-include(joinpath(_PATH_TO_SRC, "PMI.jl"));
 include(joinpath(_PATH_TO_SRC, "CBOW.jl"));
+include(joinpath(_PATH_TO_SRC, "SkipGram.jl"));
+include(joinpath(_PATH_TO_SRC, "NegativeSampling.jl"));
